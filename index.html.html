@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Acompanhamento de Escritórios</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface2: #f4f6f8;
+    --border: rgba(0,0,0,0.10);
+    --text: #111827;
+    --text2: #4b5563;
+    --text3: #9ca3af;
+    --blue: #1d4ed8;
+    --blue-light: #dbeafe;
+    --teal: #065f46;
+    --teal-light: #d1fae5;
+    --amber: #92400e;
+    --amber-light: #fef3c7;
+    --red: #991b1b;
+    --red-light: #fee2e2;
+    --coral: #9a3412;
+    --coral-light: #ffedd5;
+    --purple: #4338ca;
+    --purple-light: #e0e7ff;
+    --green: #166534;
+    --green-light: #dcfce7;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; }
+  .page { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+  h1 { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+  .subtitle { color: var(--text2); font-size: 13px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .section { margin-bottom: 24px; }
+  .section-title { font-size: 13px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; align-items: flex-end; }
+  .filter-group { display: flex; flex-direction: column; gap: 4px; }
+  .filter-group label { font-size: 12px; color: var(--text2); }
+  select { background: var(--surface); color: var(--text); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 7px 28px 7px 10px; font-size: 13px; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23888' d='m7 10 5 5 5-5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; cursor: pointer; }
+  select:focus { outline: 2px solid var(--blue); outline-offset: 1px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .kpi { background: var(--surface2); border-radius: var(--radius-sm); padding: 14px 16px; }
+  .kpi-label { font-size: 11px; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .kpi-value { font-size: 22px; font-weight: 500; }
+  .kpi-delta { font-size: 12px; margin-top: 4px; }
+  .kpi-delta.up { color: var(--teal); }
+  .kpi-delta.down { color: var(--red); }
+  .chart-wrap { position: relative; width: 100%; }
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .tab { padding: 9px 18px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--text2); background: none; border-top: none; border-left: none; border-right: none; transition: color .15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; font-size: 12px; color: var(--text2); }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 10px; color: var(--text2); font-weight: 500; border-bottom: 1px solid var(--border); font-size: 12px; white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  .total-row td { font-weight: 500; background: var(--surface2); }
+  .neg { color: var(--red); }
+  .pos { color: var(--teal); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+  .badge-down { background: var(--red-light); color: var(--red); }
+  .badge-up { background: var(--teal-light); color: var(--teal); }
+  .badge-warn { background: var(--amber-light); color: var(--amber); }
+  .note { background: var(--amber-light); border-left: 3px solid var(--amber); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 10px 14px; margin-bottom: 10px; font-size: 12px; color: var(--amber); }
+  .note strong { color: var(--amber); }
+  .comp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .comp-table th { padding: 8px 12px; font-size: 12px; color: var(--text2); font-weight: 500; border-bottom: 1px solid var(--border); }
+  .comp-table td { padding: 8px 12px; border-bottom: 0.5px solid var(--border); }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table .total { font-weight: 500; background: var(--surface2); }
+  hr { border: none; border-top: 0.5px solid var(--border); margin: 20px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Acompanhamento de indicadores — escritórios</h1>
+  <p class="subtitle">Jul/2025 a Mai/2026 · Dados: Recuperação, Faturamento, Carteira # e Carteira $</p>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="evolucao">Evolução temporal</button>
+    <button class="tab" data-tab="consolidado">Consolidado por escritório</button>
+    <button class="tab" data-tab="comp1">Q2/3 2025 vs 2026</button>
+    <button class="tab" data-tab="comp2">Jan/26 vs Fev–Mai/26</button>
+    <button class="tab" data-tab="analises">Análises e alertas</button>
+  </div>
+
+  <!-- TAB 1: EVOLUÇÃO -->
+  <div class="tab-panel active card" id="tab-evolucao">
+    <div class="section-title" style="margin-bottom:12px">Seller</div>
+    <div class="kpis" id="kpi-seller" style="margin-bottom:16px"></div>
+    <div class="grid2" style="margin-bottom:28px">
+      <div>
+        <div class="legend" style="margin-bottom:6px">
+          <span class="legend-item"><span class="legend-dot" style="background:#185fa5"></span>Carteira # (esq.)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#534ab7"></span>Carteira R$ (dir.)</span>
+        </div>
+        <div style="height:280px;position:relative"><canvas id="chartSellerCarteira" role="img" aria-label="Seller carteira"></canvas></div>
+      </div>
+      <div>
+        <div class="legend" style="margin-bottom:6px">
+          <span class="legend-item"><span class="legend-dot" style="background:#0f6e56"></span>Recuperação</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#854f0b"></span>Faturamento</span>
+        </div>
+        <div style="height:280px;position:relative"><canvas id="chartSellerRecupFat" role="img" aria-label="Seller recuperação e faturamento"></canvas></div>
+      </div>
+    </div>
+    <hr>
+    <div class="section-title" style="margin-bottom:12px">Buyer</div>
+    <div class="kpis" id="kpi-buyer" style="margin-bottom:16px"></div>
+    <div class="grid2">
+      <div>
+        <div class="legend" style="margin-bottom:6px">
+          <span class="legend-item"><span class="legend-dot" style="background:#185fa5"></span>Carteira # (esq.)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#534ab7"></span>Carteira R$ (dir.)</span>
+        </div>
+        <div style="height:280px;position:relative"><canvas id="chartBuyerCarteira" role="img" aria-label="Buyer carteira"></canvas></div>
+      </div>
+      <div>
+        <div class="legend" style="margin-bottom:6px">
+          <span class="legend-item"><span class="legend-dot" style="background:#0f6e56"></span>Recuperação</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#854f0b"></span>Faturamento</span>
+        </div>
+        <div style="height:280px;position:relative"><canvas id="chartBuyerRecupFat" role="img" aria-label="Buyer recuperação e faturamento"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: CONSOLIDADO -->
+  <div class="tab-panel card" id="tab-consolidado">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="section-title" style="margin-bottom:0">Recuperação (R$) — por escritório</div>
+      <div id="var-recup" style="font-size:13px"></div>
+    </div>
+    <div style="overflow-x:auto"><table id="tbl-recup"></table></div>
+    <hr>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="section-title" style="margin-bottom:0">Faturamento (R$) — por escritório</div>
+      <div id="var-fat" style="font-size:13px"></div>
+    </div>
+    <div style="overflow-x:auto"><table id="tbl-fat"></table></div>
+    <hr>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="section-title" style="margin-bottom:0">Carteira # — por escritório</div>
+      <div id="var-cn" style="font-size:13px"></div>
+    </div>
+    <div style="overflow-x:auto"><table id="tbl-cn"></table></div>
+    <hr>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="section-title" style="margin-bottom:0">Carteira R$ — por escritório</div>
+      <div id="var-cv" style="font-size:13px"></div>
+    </div>
+    <div style="overflow-x:auto"><table id="tbl-cv"></table></div>
+  </div>
+
+  <!-- TAB 3: COMPARATIVO 1 -->
+  <div class="tab-panel card" id="tab-comp1">
+    <div class="section-title">Q2/3 2025 (média mensal) vs Jan–Mai 2026 (média mensal)</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Comparação da média mensal entre os dois períodos por escritório e por indicador.</p>
+    <div class="grid2" style="margin-bottom:24px">
+      <div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:10px;color:var(--text2)">Recuperação (R$) — média mensal</div>
+        <div style="overflow-x:auto"><table id="tbl-comp1-recup"></table></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:10px;color:var(--text2)">Faturamento (R$) — média mensal</div>
+        <div style="overflow-x:auto"><table id="tbl-comp1-fat"></table></div>
+      </div>
+    </div>
+    <div style="height:300px;position:relative"><canvas id="chartComp1" role="img" aria-label="Comparativo Q2/3 2025 vs 2026"></canvas></div>
+  </div>
+
+  <!-- TAB 4: COMPARATIVO 2 -->
+  <div class="tab-panel card" id="tab-comp2">
+    <div class="section-title">Jan/2026 (baseline) vs média Fev–Mai/2026</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Variação de cada escritório partindo de janeiro como base.</p>
+    <div class="grid2" style="margin-bottom:24px">
+      <div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:10px;color:var(--text2)">Recuperação (R$)</div>
+        <div style="overflow-x:auto"><table id="tbl-comp2-recup"></table></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:10px;color:var(--text2)">Faturamento (R$)</div>
+        <div style="overflow-x:auto"><table id="tbl-comp2-fat"></table></div>
+      </div>
+    </div>
+    <div style="height:300px;position:relative"><canvas id="chartComp2" role="img" aria-label="Comparativo Jan 2026 vs Fev Mai 2026"></canvas></div>
+  </div>
+
+  <!-- TAB 5: ANÁLISES -->
+  <div class="tab-panel card" id="tab-analises">
+    <div class="section-title">Análises automáticas e alertas</div>
+    <div id="analises-content"></div>
+  </div>
+
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
+
+// Global chart defaults for white background
+Chart.defaults.color = '#4b5563';
+Chart.defaults.borderColor = 'rgba(0,0,0,0.08)';
+Chart.defaults.plugins.legend.labels.color = '#111827';
+Chart.defaults.scale.grid.color = 'rgba(0,0,0,0.07)';
+Chart.defaults.scale.ticks.color = '#6b7280';
+
+const MONTHS = ['jul/25','ago/25','set/25','out/25','nov/25','dez/25','jan/26','fev/26','mar/26','abr/26','mai/26'];
+
+function fmtLabel(v) {
+  if (v === null || v === undefined) return '';
+  if (Math.abs(v) >= 1000000) return 'R$' + (v/1000000).toFixed(1) + 'M';
+  if (Math.abs(v) >= 1000) return 'R$' + Math.round(v/1000) + 'k';
+  return 'R$' + Math.round(v);
+}
+
+const LINE_DATALABELS = {
+  display: true,
+  anchor: 'end',
+  align: 'top',
+  offset: 2,
+  font: { size: 9 },
+  color: function(ctx) { return ctx.dataset.borderColor; },
+  formatter: fmtLabel
+};
+
+const BAR_DATALABELS = {
+  display: true,
+  anchor: 'end',
+  align: 'top',
+  offset: 2,
+  font: { size: 10, weight: '500' },
+  color: function(ctx) { return ctx.dataset.borderColor; },
+  formatter: fmtLabel
+};
+const Q23_IDX = [0,1,2,3,4,5];
+const H1_IDX = [6,7,8,9,10];
+const JAN_IDX = 6;
+const FEV_MAI_IDX = [7,8,9,10];
+
+const BUYER_OFFICES = ['KITEI','LINK','NOVAQUEST','NQ_DIG_BUYER','TOLEDO_BUYER'];
+const SELLER_OFFICES = ['NQ_DIG_SELLER','TOLEDO_SELLER'];
+
+const DATA = {
+  KITEI:         { recuperacao:[234371.69,287903.30,282933.33,290538.53,279864.17,238571.75,213621.26,171661.54,222005.69,144672.08,106442.51], faturamento:[73188.15,63551.93,48892.55,99897.23,104518.58,84648.03,56222.13,37171.79,106656.74,48628.78,31536.45], carteira_n:[68348,74954,74788,74661,74401,74631,74264,74782,72321,68750,62383], carteira_v:[13487659,14703492,14883164,14566790,13972328,14550024,13812700,14331661,13958624,13223955,15528614] },
+  LINK:          { recuperacao:[279662.57,245091.48,337361.93,410082.30,299406.23,328076.40,353295.38,407536.57,258349.60,148241.82,61371.50], faturamento:[61722.45,59525.54,245713.33,123955.43,72987.96,85703.34,88922.22,109265.10,56498.68,34797.59,12580.10], carteira_n:[60645,63203,96251,101960,60808,60235,59287,59326,45943,48939,38155], carteira_v:[79681982,85247508,127452130,135633563,84306809,84240365,92287645,92819903,53428245,56110585,66778663] },
+  NOVAQUEST:     { recuperacao:[310961.97,305168.10,377613.39,355120.61,357944.67,412141.17,353326.42,320096.72,249841.15,221993.46,132371.40], faturamento:[22148.85,28876.16,39495.16,52889.94,53187.80,43926.01,45062.57,25982.01,29065.12,36148.64,22992.03], carteira_n:[17920,20672,21722,19822,22193,23144,21857,23362,21760,21808,17589], carteira_v:[27051520,31943460,34491699,30421984,34412101,36710429,35920067,38010482,34973302,34770116,28442455] },
+  NQ_DIG_BUYER:  { recuperacao:[92004.90,63625.25,74151.25,76898.12,80930.96,64752.11,67207.32,65041.16,52933.34,84948.66,44570.48], faturamento:[26564.49,11033.26,12204.17,21490.02,15549.82,12904.26,14267.19,15278.67,13079.13,44736.11,12957.61], carteira_n:[35225,30482,31431,30545,30983,30404,30563,30403,29800,29113,26283], carteira_v:[6700678,5711512,5840405,5687651,5729202,5562203,5573799,5512302,5407043,5257216,5263895] },
+  NQ_DIG_SELLER: { recuperacao:[125691.82,125449.10,155748.10,129134.28,106110.86,148440.84,129223.54,103841.27,105335.04,97610.08,19447.83], faturamento:[32747.00,48226.42,49404.33,56184.11,32280.06,81381.27,74939.73,43669.44,40318.06,44870.74,5390.07], carteira_n:[9627,7290,9661,6817,7223,6691,7328,6666,892,1177,15442], carteira_v:[22453807,16749607,22883484,16249191,18660957,16726170,18307282,17430679,2073144,2628659,28775987] },
+  TOLEDO_BUYER:  { recuperacao:[261462.13,313456.76,332785.49,372654.87,325185.42,315709.21,351626.63,324525.83,274326.31,201801.05,135175.36], faturamento:[21840.50,37062.14,30123.49,38397.94,31413.91,23603.39,32530.13,27955.99,38387.22,22390.57,26142.52], carteira_n:[21256,18102,18855,18252,18625,17326,18737,17397,18024,16296,13387], carteira_v:[33939601,27418470,29001680,30250626,30052166,29463117,31978452,30184430,31279471,28439352,22038925] },
+  TOLEDO_SELLER: { recuperacao:[114099.32,109067.33,116525.55,126072.61,127190.44,135717.87,146114.76,132249.96,38696.41,68010.90,15945.89], faturamento:[29544.81,24373.62,36348.43,39224.45,40924.87,35739.58,51320.64,35215.72,15950.59,24781.98,3188.44], carteira_n:[7983,11313,8492,11250,9515,10598,9812,10415,573,1086,20503], carteira_v:[17730388,26774917,20527484,27684954,23290578,27703859,26001180,27577186,1017329,2310747,38792823] }
+};
+
+const OFFICE_LABELS = { KITEI:'KITEI', LINK:'LINK', NOVAQUEST:'NOVAQUEST', NQ_DIG_BUYER:'NQ_DIG Buyer', NQ_DIG_SELLER:'NQ_DIG Seller', TOLEDO_BUYER:'Toledo Buyer', TOLEDO_SELLER:'Toledo Seller' };
+const OFFICE_COLORS = { KITEI:'#185fa5', LINK:'#0f6e56', NOVAQUEST:'#534ab7', NQ_DIG_BUYER:'#854f0b', NQ_DIG_SELLER:'#993c1d', TOLEDO_BUYER:'#a32d2d', TOLEDO_SELLER:'#3b6d11' };
+const METRIC_LABELS = { recuperacao:'Recuperação (R$)', faturamento:'Faturamento (R$)', carteira_n:'Carteira #', carteira_v:'Carteira $ (R$)' };
+const OFFICES = Object.keys(DATA);
+
+function sum(arr, idxs) { return idxs.reduce((a,i) => a + (arr[i]||0), 0); }
+function avg(arr, idxs) { return sum(arr, idxs) / idxs.length; }
+function fmt(v, metric) {
+  if (metric === 'carteira_n') return Math.round(v).toLocaleString('pt-BR');
+  return 'R$ ' + Math.round(v).toLocaleString('pt-BR');
+}
+function fmtDelta(v) {
+  const sign = v >= 0 ? '+' : '';
+  return sign + Math.round(v) + '%';
+}
+function pct(a, b) { if (!b) return 0; return ((a - b) / b) * 100; }
+
+function getConsolidated(metric) {
+  return MONTHS.map((_, i) => OFFICES.reduce((a, o) => a + (DATA[o][metric][i]||0), 0));
+}
+
+function buildGroupKPIs(rowId, offices) {
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  const recup = sumGroup(offices, 'recuperacao');
+  const fat   = sumGroup(offices, 'faturamento');
+  const cn    = sumGroup(offices, 'carteira_n');
+  const cv    = sumGroup(offices, 'carteira_v');
+
+  function kpi(label, val, prev, isCurrency, isMoney) {
+    const d = pct(val, prev);
+    const fmt = isMoney ? 'R$ ' + Math.round(val).toLocaleString('pt-BR') : isCurrency ? 'R$ ' + Math.round(val).toLocaleString('pt-BR') : Math.round(val).toLocaleString('pt-BR');
+    return `<div class="kpi">
+      <div class="kpi-label">${label}</div>
+      <div class="kpi-value" style="font-size:16px">${fmt}</div>
+      <div class="kpi-delta ${d >= 0 ? 'up' : 'down'}">${fmtDelta(d)} vs abr/26</div>
+    </div>`;
+  }
+
+  row.innerHTML =
+    kpi('Recuperação — mai/26',  recup[10], recup[9], true)  +
+    kpi('Faturamento — mai/26',  fat[10],   fat[9],   true)  +
+    kpi('Carteira # — mai/26',   cn[10],    cn[9],    false) +
+    kpi('Carteira R$ — mai/26',  cv[10],    cv[9],    true);
+}
+
+function buildKPIs() {
+  buildGroupKPIs('kpi-seller', SELLER_OFFICES);
+  buildGroupKPIs('kpi-buyer',  BUYER_OFFICES);
+}
+
+let chartBuyerCarteira, chartBuyerRecupFat, chartSellerCarteira, chartSellerRecupFat;
+let chartComp1, chartComp2;
+let chartCn, chartCv, chartRecup, chartFat;
+
+function sumGroup(offices, metric) {
+  return MONTHS.map((_, i) => offices.reduce((a, o) => a + (DATA[o][metric][i] || 0), 0));
+}
+
+const NO_LABELS = { display: false };
+
+function buildCarteiraChart(canvasId, offices, ref) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  if (ref) ref.destroy();
+  return new Chart(ctx, {
+    type: 'line',
+    data: { labels: MONTHS, datasets: [
+      { label: 'Carteira #', data: sumGroup(offices, 'carteira_n'), borderColor: '#185fa5', backgroundColor: '#185fa522', tension: 0.3, pointRadius: 3, borderWidth: 2, yAxisID: 'yN' },
+      { label: 'Carteira R$', data: sumGroup(offices, 'carteira_v'), borderColor: '#534ab7', backgroundColor: '#534ab722', tension: 0.3, pointRadius: 3, borderWidth: 2, yAxisID: 'yV' }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, datalabels: NO_LABELS,
+        tooltip: { callbacks: { label: ctx => ctx.dataset.yAxisID === 'yN'
+          ? ` ${ctx.dataset.label}: ${Math.round(ctx.raw).toLocaleString('pt-BR')}`
+          : ` ${ctx.dataset.label}: R$ ${Math.round(ctx.raw).toLocaleString('pt-BR')}` }}
+      },
+      scales: {
+        x: { ticks: { autoSkip: false, maxRotation: 45, font: { size: 9 } } },
+        yN: { type: 'linear', position: 'left',  ticks: { callback: v => Math.round(v/1000)+'k', font: { size: 9 } }, title: { display: true, text: '#', font: { size: 9 } } },
+        yV: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: v => 'R$'+Math.round(v/1000000)+'M', font: { size: 9 } }, title: { display: true, text: 'R$', font: { size: 9 } } }
+      }
+    }
+  });
+}
+
+function buildRecupFatChart(canvasId, offices, ref) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  if (ref) ref.destroy();
+  return new Chart(ctx, {
+    type: 'line',
+    data: { labels: MONTHS, datasets: [
+      { label: 'Recuperação', data: sumGroup(offices, 'recuperacao'), borderColor: '#0f6e56', backgroundColor: '#0f6e5622', tension: 0.3, pointRadius: 3, borderWidth: 2 },
+      { label: 'Faturamento', data: sumGroup(offices, 'faturamento'), borderColor: '#854f0b', backgroundColor: '#854f0b22', tension: 0.3, pointRadius: 3, borderWidth: 2 }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, datalabels: NO_LABELS,
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: R$ ${Math.round(ctx.raw).toLocaleString('pt-BR')}` }}
+      },
+      scales: {
+        x: { ticks: { autoSkip: false, maxRotation: 45, font: { size: 9 } } },
+        y: { ticks: { callback: v => fmtLabel(v), font: { size: 9 } } }
+      }
+    }
+  });
+}
+
+function buildChartBuyer() {
+  chartBuyerCarteira  = buildCarteiraChart('chartBuyerCarteira',  BUYER_OFFICES, chartBuyerCarteira);
+  chartBuyerRecupFat  = buildRecupFatChart('chartBuyerRecupFat',  BUYER_OFFICES, chartBuyerRecupFat);
+}
+function buildChartSeller() {
+  chartSellerCarteira = buildCarteiraChart('chartSellerCarteira', SELLER_OFFICES, chartSellerCarteira);
+  chartSellerRecupFat = buildRecupFatChart('chartSellerRecupFat', SELLER_OFFICES, chartSellerRecupFat);
+}
+
+function buildChartConsolidated() {
+  const ctx = document.getElementById('chartConsolidated').getContext('2d');
+  if (chartConsolidated) chartConsolidated.destroy();
+  const recup = getConsolidated('recuperacao');
+  const fat = getConsolidated('faturamento');
+  chartConsolidated = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'Recuperação', data: recup, backgroundColor: '#185fa5cc', borderColor: '#185fa5', borderWidth: 1 },
+        { label: 'Faturamento', data: fat, backgroundColor: '#0f6e56cc', borderColor: '#0f6e56', borderWidth: 1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => ' ' + ctx.dataset.label + ': R$ ' + Math.round(ctx.raw).toLocaleString('pt-BR') }
+      }, datalabels: NO_LABELS },
+      scales: {
+        x: { ticks: { autoSkip: false, maxRotation: 45, font: { size: 11 } } },
+        y: { ticks: { callback: v => 'R$'+Math.round(v/1000)+'k', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function buildTableConsolidated() {
+  function fmtVal(v, metric) {
+    if (metric === 'carteira_n') {
+      return v >= 1000 ? (v/1000).toFixed(1).replace('.',',')+'K' : Math.round(v).toLocaleString('pt-BR');
+    }
+    if (v >= 1e9) return 'R$ '+Math.round(v/1e9)+'B';
+    if (v >= 1e6) return 'R$ '+Math.round(v/1e6)+'M';
+    if (v >= 1e3) return 'R$ '+Math.round(v/1e3)+'K';
+    return 'R$ '+Math.round(v).toLocaleString('pt-BR');
+  }
+
+  // Traffic-light: only mar/26=8, abr/26=9, mai/26=10
+  const TRAFFIC_IDX = [8, 9, 10];
+  const TRAFFIC = [
+    { bg: '#dcfce7', text: '#166534' }, // green  — best delta
+    { bg: '#fef9c3', text: '#854d0e' }, // amber  — middle
+    { bg: '#fee2e2', text: '#991b1b' }  // red    — worst delta
+  ];
+
+  function buildTable(metric, tableId) {
+    const tbl = document.getElementById(tableId);
+
+    // Per column (mar/abr/mai): find top 3 offices by absolute delta, rank them
+    // trafficMap[officeKey][colIdx] = 0|1|2 (green/amber/red), or undefined if not top-3
+    const trafficMap = {};
+    OFFICES.forEach(o => { trafficMap[o] = {}; });
+    trafficMap['__total__'] = {};
+
+    TRAFFIC_IDX.forEach(ci => {
+      const entries = OFFICES.map(o => {
+        const arr = DATA[o][metric];
+        return { key: o, d: pct(arr[ci], arr[ci-1]) };
+      });
+      // Top 3 by absolute variation
+      const top3 = [...entries].sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 3);
+      // Among top3, rank by absolute value descending: largest=red(2), mid=amber(1), smallest=green(0)
+      top3.forEach((x, r) => { trafficMap[x.key][ci] = 2 - r; }); // r=0(largest)→2(red), r=2(smallest)→0(green)
+    });
+
+    const JUL_JAN = [0,1,2,3,4,5,6];   // jul/25–jan/26
+    const FEV_MAI = [7,8,9,10];         // fev/26–mai/26
+
+    function avgArr(arr, idxs) { return idxs.reduce((s,i) => s+arr[i], 0) / idxs.length; }
+
+    function cellHtml(arr, rowKey, i) {
+      const v = arr[i];
+      const rank = TRAFFIC_IDX.includes(i) && trafficMap[rowKey] !== undefined ? trafficMap[rowKey][i] : undefined;
+      const isTraffic = rank !== undefined;
+      const tc = isTraffic ? TRAFFIC[rank] : null;
+      const bg = isTraffic ? `background:${tc.bg}` : '';
+      return `<td style="${bg}">${fmtVal(v, metric)}</td>`;
+    }
+
+    function avgCellHtml(v, m1, bold) {
+      const d = pct(v, m1);
+      const arrow = d >= 0 ? '▲' : '▼';
+      const color = d >= 0 ? '#166534' : '#991b1b';
+      const deltaHtml = `<br><span style="font-size:10px;color:${color};font-weight:600">${arrow}${Math.abs(Math.round(d))}%</span>`;
+      const style = `background:#e8eeff;font-style:italic;${bold?'font-weight:600;':''}`;
+      return `<td style="${style}">${fmtVal(v, metric)}${deltaHtml}</td>`;
+    }
+
+    function buildRow(arr, rowKey, label, isTotal) {
+      const m1 = avgArr(arr, JUL_JAN);
+      const m2 = avgArr(arr, FEV_MAI);
+      let html = `<tr${isTotal?' class="total-row"':''}><td style="font-weight:500">${label}</td>`;
+      arr.forEach((_, i) => {
+        html += cellHtml(arr, rowKey, i);
+        if (i === 6) html += `<td style="background:#e8eeff;font-style:italic;${isTotal?'font-weight:600;':''}">${fmtVal(m1, metric)}</td>`;
+      });
+      html += avgCellHtml(m2, m1, isTotal);
+      html += '</tr>';
+      return html;
+    }
+
+    let html = '<thead><tr><th>Escritório</th>';
+    MONTHS.forEach((m, i) => {
+      const hi = TRAFFIC_IDX.includes(i) ? ' style="background:#f8fafc"' : '';
+      html += `<th${hi}>${m}</th>`;
+      if (i === 6) html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø jul–jan</th>';
+    });
+    html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø fev–mai</th>';
+    html += '</tr></thead><tbody>';
+
+    OFFICES.forEach(o => { html += buildRow(DATA[o][metric], o, OFFICE_LABELS[o], false); });
+    const total = getConsolidated(metric);
+    html += buildRow(total, '__total__', 'TOTAL', true);
+    html += '</tbody>';
+    tbl.innerHTML = html;
+  }
+
+  function buildVariation(metric, divId) {
+    const total = getConsolidated(metric);
+    const m1 = [0,1,2,3,4,5,6].reduce((s,i) => s+total[i], 0) / 7;
+    const m2 = [7,8,9,10].reduce((s,i) => s+total[i], 0) / 4;
+    const d = pct(m2, m1);
+    const positive = d >= 0;
+    const color = positive ? '#166534' : '#991b1b';
+    const bg = positive ? '#dcfce7' : '#fee2e2';
+    const arrow = positive ? '▲' : '▼';
+    document.getElementById(divId).innerHTML =
+      `<span style="background:${bg};color:${color};padding:3px 10px;border-radius:4px;font-weight:600">` +
+      `${arrow} ${Math.abs(Math.round(d))}% · Ø fev–mai vs Ø jul–jan</span>`;
+  }
+
+  buildTable('carteira_n',  'tbl-cn');    buildVariation('carteira_n',  'var-cn');
+  buildTable('carteira_v',  'tbl-cv');    buildVariation('carteira_v',  'var-cv');
+  buildTable('recuperacao', 'tbl-recup'); buildVariation('recuperacao', 'var-recup');
+  buildTable('faturamento', 'tbl-fat');   buildVariation('faturamento', 'var-fat');
+}
+
+function buildComp1() {
+  function buildTable(metric, tableId) {
+    const tbl = document.getElementById(tableId);
+    let html = '<thead><tr><th>Escritório</th><th>Q2/3 2025 (média)</th><th>Jan–Mai/26 (média)</th><th>Variação</th></tr></thead><tbody>';
+    OFFICES.forEach(o => {
+      const a = avg(DATA[o][metric], Q23_IDX);
+      const b = avg(DATA[o][metric], H1_IDX);
+      const d = pct(b, a);
+      const cls = d >= 0 ? 'pos' : 'neg';
+      const badge = d >= 0 ? 'badge-up' : 'badge-down';
+      html += `<tr>
+        <td style="font-weight:500">${OFFICE_LABELS[o]}</td>
+        <td>R$ ${Math.round(a).toLocaleString('pt-BR')}</td>
+        <td>R$ ${Math.round(b).toLocaleString('pt-BR')}</td>
+        <td><span class="badge ${badge}">${fmtDelta(d)}</span></td>
+      </tr>`;
+    });
+    const totalH2 = avg(getConsolidated(metric), Q23_IDX);
+    const total26 = avg(getConsolidated(metric), H1_IDX);
+    const dTotal = pct(total26, totalH2);
+    const badgeT = dTotal >= 0 ? 'badge-up' : 'badge-down';
+    html += `<tr class="total-row">
+      <td>TOTAL</td>
+      <td>R$ ${Math.round(totalH2).toLocaleString('pt-BR')}</td>
+      <td>R$ ${Math.round(total26).toLocaleString('pt-BR')}</td>
+      <td><span class="badge ${badgeT}">${fmtDelta(dTotal)}</span></td>
+    </tr></tbody>`;
+    tbl.innerHTML = html;
+  }
+  buildTable('recuperacao', 'tbl-comp1-recup');
+  buildTable('faturamento', 'tbl-comp1-fat');
+
+  const ctx = document.getElementById('chartComp1').getContext('2d');
+  if (chartComp1) chartComp1.destroy();
+  const labels = OFFICES.map(o => OFFICE_LABELS[o]);
+  const h2vals = OFFICES.map(o => avg(DATA[o]['recuperacao'], Q23_IDX));
+  const h1vals = OFFICES.map(o => avg(DATA[o]['recuperacao'], H1_IDX));
+  chartComp1 = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Q2/3 2025 (média mensal)', data: h2vals, backgroundColor: '#185fa5cc', borderColor:'#185fa5', borderWidth:1 },
+        { label: 'Jan–Mai/2026 (média mensal)', data: h1vals, backgroundColor: '#0f6e56cc', borderColor:'#0f6e56', borderWidth:1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: true, labels: { font: { size: 12 }, color: '#888780', padding: 16 } }, tooltip: {
+        callbacks: { label: ctx => ' ' + ctx.dataset.label + ': R$ ' + Math.round(ctx.raw).toLocaleString('pt-BR') }
+      }, datalabels: NO_LABELS },
+      scales: {
+        x: { ticks: { font: { size: 11 } } },
+        y: { ticks: { callback: v => 'R$'+Math.round(v/1000)+'k', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function buildComp2() {
+  function buildTable(metric, tableId) {
+    const tbl = document.getElementById(tableId);
+    let html = '<thead><tr><th>Escritório</th><th>Jan/26</th><th>Méd. Fev–Mai/26</th><th>Variação</th></tr></thead><tbody>';
+    OFFICES.forEach(o => {
+      const jan = DATA[o][metric][JAN_IDX];
+      const rest = avg(DATA[o][metric], FEV_MAI_IDX);
+      const d = pct(rest, jan);
+      const badge = d >= 0 ? 'badge-up' : 'badge-down';
+      html += `<tr>
+        <td style="font-weight:500">${OFFICE_LABELS[o]}</td>
+        <td>R$ ${Math.round(jan).toLocaleString('pt-BR')}</td>
+        <td>R$ ${Math.round(rest).toLocaleString('pt-BR')}</td>
+        <td><span class="badge ${badge}">${fmtDelta(d)}</span></td>
+      </tr>`;
+    });
+    const totalJan = getConsolidated(metric)[JAN_IDX];
+    const totalRest = avg(getConsolidated(metric), FEV_MAI_IDX);
+    const dTotal = pct(totalRest, totalJan);
+    const badgeT = dTotal >= 0 ? 'badge-up' : 'badge-down';
+    html += `<tr class="total-row">
+      <td>TOTAL</td>
+      <td>R$ ${Math.round(totalJan).toLocaleString('pt-BR')}</td>
+      <td>R$ ${Math.round(totalRest).toLocaleString('pt-BR')}</td>
+      <td><span class="badge ${badgeT}">${fmtDelta(dTotal)}</span></td>
+    </tr></tbody>`;
+    tbl.innerHTML = html;
+  }
+  buildTable('recuperacao', 'tbl-comp2-recup');
+  buildTable('faturamento', 'tbl-comp2-fat');
+
+  const ctx = document.getElementById('chartComp2').getContext('2d');
+  if (chartComp2) chartComp2.destroy();
+  const labels = OFFICES.map(o => OFFICE_LABELS[o]);
+  const janVals = OFFICES.map(o => DATA[o]['recuperacao'][JAN_IDX]);
+  const restVals = OFFICES.map(o => avg(DATA[o]['recuperacao'], FEV_MAI_IDX));
+  chartComp2 = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Jan/2026', data: janVals, backgroundColor: '#534ab7cc', borderColor:'#534ab7', borderWidth:1 },
+        { label: 'Méd. Fev–Mai/2026', data: restVals, backgroundColor: '#993c1dcc', borderColor:'#993c1d', borderWidth:1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: true, labels: { font: { size: 12 }, color: '#888780', padding: 16 } }, tooltip: {
+        callbacks: { label: ctx => ' ' + ctx.dataset.label + ': R$ ' + Math.round(ctx.raw).toLocaleString('pt-BR') }
+      }, datalabels: NO_LABELS },
+      scales: {
+        x: { ticks: { font: { size: 11 } } },
+        y: { ticks: { callback: v => 'R$'+Math.round(v/1000)+'k', font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function buildAnalises() {
+  const container = document.getElementById('analises-content');
+  const totalRecup = getConsolidated('recuperacao');
+  const totalFat   = getConsolidated('faturamento');
+  const FEV_MAI    = [7,8,9,10];
+
+  const analises = [];
+
+  // Variação recuperação consolidada fev–mai
+  const avgFevMaiRecup = avg(totalRecup, FEV_MAI);
+  const avgJulJanRecup = avg(totalRecup, [0,1,2,3,4,5,6]);
+  const diffRecup = pct(avgFevMaiRecup, avgJulJanRecup);
+  analises.push({
+    tipo: diffRecup < -10 ? 'danger' : diffRecup < 0 ? 'warn' : 'info',
+    titulo: 'Recuperação consolidada — Ø fev–mai vs Ø jul–jan',
+    texto: `Média jul–jan: R$ ${Math.round(avgJulJanRecup).toLocaleString('pt-BR')} | Média fev–mai: R$ ${Math.round(avgFevMaiRecup).toLocaleString('pt-BR')} → variação: ${fmtDelta(diffRecup)}.`
+  });
+
+  // Variação faturamento consolidado fev–mai
+  const avgFevMaiFat = avg(totalFat, FEV_MAI);
+  const avgJulJanFat = avg(totalFat, [0,1,2,3,4,5,6]);
+  const diffFat = pct(avgFevMaiFat, avgJulJanFat);
+  analises.push({
+    tipo: diffFat < -10 ? 'danger' : diffFat < 0 ? 'warn' : 'info',
+    titulo: 'Faturamento consolidado — Ø fev–mai vs Ø jul–jan',
+    texto: `Média jul–jan: R$ ${Math.round(avgJulJanFat).toLocaleString('pt-BR')} | Média fev–mai: R$ ${Math.round(avgFevMaiFat).toLocaleString('pt-BR')} → variação: ${fmtDelta(diffFat)}.`
+  });
+
+  // Toledo Seller — colapso mar/26 (dentro de fev–mai)
+  const tsDelta = pct(DATA.TOLEDO_SELLER.recuperacao[8], DATA.TOLEDO_SELLER.recuperacao[7]);
+  analises.push({
+    tipo: 'danger',
+    titulo: 'Toledo Seller — queda acentuada em mar/26',
+    texto: `Recuperação caiu de R$ ${Math.round(DATA.TOLEDO_SELLER.recuperacao[7]).toLocaleString('pt-BR')} (fev/26) para R$ ${Math.round(DATA.TOLEDO_SELLER.recuperacao[8]).toLocaleString('pt-BR')} (mar/26) — queda de ${Math.round(Math.abs(tsDelta))}%. Provável impacto do problema de SBOX (carteira Seller zerada no período).`
+  });
+
+  // NQ_DIG Seller — queda em mar/26
+  const nqsDelta = pct(DATA.NQ_DIG_SELLER.recuperacao[8], DATA.NQ_DIG_SELLER.recuperacao[7]);
+  analises.push({
+    tipo: 'danger',
+    titulo: 'NQ_DIG Seller — queda em mar/26',
+    texto: `Recuperação caiu de R$ ${Math.round(DATA.NQ_DIG_SELLER.recuperacao[7]).toLocaleString('pt-BR')} (fev/26) para R$ ${Math.round(DATA.NQ_DIG_SELLER.recuperacao[8]).toLocaleString('pt-BR')} (mar/26) — redução de ${Math.round(Math.abs(nqsDelta))}%. Carteira # caiu de 7.328 para 892, sinalizando provável problema de dados SBOX.`
+  });
+
+  // LINK — fev/26 anômalo
+  analises.push({
+    tipo: 'warn',
+    titulo: 'LINK — faturamento anômalo em fev/26',
+    texto: `Fev/26 inclui recuperação de ação judicial (cliente Marlon). Valor superior à recuperação normal — deve ser desconsiderado em análises de tendência.`
+  });
+
+  // NOVAQUEST — queda fev–mai
+  const nqDelta = pct(DATA.NOVAQUEST.faturamento[10], DATA.NOVAQUEST.faturamento[7]);
+  analises.push({
+    tipo: 'warn',
+    titulo: 'NOVAQUEST — faturamento em declínio (fev–mai/26)',
+    texto: `Faturamento passou de R$ ${Math.round(DATA.NOVAQUEST.faturamento[7]).toLocaleString('pt-BR')} (fev/26) para R$ ${Math.round(DATA.NOVAQUEST.faturamento[10]).toLocaleString('pt-BR')} (mai/26) — queda de ${Math.round(Math.abs(nqDelta))}%.`
+  });
+
+  const colorMap = { danger: ['var(--red-light)','var(--red)','#991b1b'], warn: ['var(--amber-light)','var(--amber)','#92400e'], info: ['var(--blue-light)','var(--blue)','#1d4ed8'] };
+  container.innerHTML = analises.map(a => {
+    const [bg, border, tc] = colorMap[a.tipo];
+    return `<div style="background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:12px">
+      <div style="font-weight:500;font-size:13px;color:${tc};margin-bottom:4px">${a.titulo}</div>
+      <div style="font-size:12px;color:${tc};opacity:0.9">${a.texto}</div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML += `
+    <hr>
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin:16px 0 10px;text-transform:uppercase;letter-spacing:.04em">Observações</div>
+    <div class="note"><strong>SBOX Fev–Abr/26:</strong> Tabelas inconsistentes afetando principalmente carteira Seller. Podem haver ajustes retroativos.</div>
+    <div class="note"><strong>Emails mai/26:</strong> Não encontrados na pasta Fechamento até 09/06/2026. Dados incluídos conforme disponíveis nas tabelas individuais.</div>
+  `;
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab === 'evolucao') { buildChartBuyer(); buildChartSeller(); }
+    if (tab.dataset.tab === 'consolidado') buildTableConsolidated();
+    if (tab.dataset.tab === 'comp1') buildComp1();
+    if (tab.dataset.tab === 'comp2') buildComp2();
+    if (tab.dataset.tab === 'analises') buildAnalises();
+  });
+});
+
+buildKPIs();
+buildChartBuyer();
+buildChartSeller();
+</script>
+</body>
+</html>
