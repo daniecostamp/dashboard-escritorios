@@ -643,80 +643,63 @@ function buildComp2() {
 function buildAnalises() {
   const container = document.getElementById('analises-content');
   const totalRecup = getConsolidated('recuperacao');
-  const totalFat = getConsolidated('faturamento');
+  const totalFat   = getConsolidated('faturamento');
+  const FEV_MAI    = [7,8,9,10];
 
   const analises = [];
 
-  // Queda geral recuperação
-  const maxRecup = Math.max(...totalRecup);
-  const maxIdx = totalRecup.indexOf(maxRecup);
-  const lastRecup = totalRecup[10];
-  const quedaTotal = pct(lastRecup, maxRecup);
+  // Variação recuperação consolidada fev–mai
+  const avgFevMaiRecup = avg(totalRecup, FEV_MAI);
+  const avgJulJanRecup = avg(totalRecup, [0,1,2,3,4,5,6]);
+  const diffRecup = pct(avgFevMaiRecup, avgJulJanRecup);
   analises.push({
-    tipo: 'danger',
-    titulo: 'Queda acentuada na recuperação consolidada',
-    texto: `O pico de recuperação foi em ${MONTHS[maxIdx]} (R$ ${Math.round(maxRecup).toLocaleString('pt-BR')}). Em mai/26 o valor caiu para R$ ${Math.round(lastRecup).toLocaleString('pt-BR')} — uma redução de ${Math.round(Math.abs(quedaTotal))}% em relação ao pico.`
+    tipo: diffRecup < -10 ? 'danger' : diffRecup < 0 ? 'warn' : 'info',
+    titulo: 'Recuperação consolidada — Ø fev–mai vs Ø jul–jan',
+    texto: `Média jul–jan: R$ ${Math.round(avgJulJanRecup).toLocaleString('pt-BR')} | Média fev–mai: R$ ${Math.round(avgFevMaiRecup).toLocaleString('pt-BR')} → variação: ${fmtDelta(diffRecup)}.`
   });
 
-  // Toledo Seller colapso
-  const tsDelta = pct(DATA.TOLEDO_SELLER.recuperacao[8], DATA.TOLEDO_SELLER.recuperacao[6]);
+  // Variação faturamento consolidado fev–mai
+  const avgFevMaiFat = avg(totalFat, FEV_MAI);
+  const avgJulJanFat = avg(totalFat, [0,1,2,3,4,5,6]);
+  const diffFat = pct(avgFevMaiFat, avgJulJanFat);
   analises.push({
-    tipo: 'danger',
-    titulo: 'Toledo Seller — colapso em mar/26',
-    texto: `Toledo Seller caiu de R$ ${Math.round(DATA.TOLEDO_SELLER.recuperacao[6]).toLocaleString('pt-BR')} (jan/26) para R$ ${Math.round(DATA.TOLEDO_SELLER.recuperacao[8]).toLocaleString('pt-BR')} (mar/26) — queda de ${Math.round(Math.abs(tsDelta))}%. Provável impacto do problema de SBOX (carteira Seller zerada no período).`
+    tipo: diffFat < -10 ? 'danger' : diffFat < 0 ? 'warn' : 'info',
+    titulo: 'Faturamento consolidado — Ø fev–mai vs Ø jul–jan',
+    texto: `Média jul–jan: R$ ${Math.round(avgJulJanFat).toLocaleString('pt-BR')} | Média fev–mai: R$ ${Math.round(avgFevMaiFat).toLocaleString('pt-BR')} → variação: ${fmtDelta(diffFat)}.`
   });
 
-  // NQ_DIG Seller colapso
-  const nqsDelta = pct(DATA.NQ_DIG_SELLER.recuperacao[8], DATA.NQ_DIG_SELLER.recuperacao[6]);
+  // Toledo Seller — colapso mar/26 (dentro de fev–mai)
+  const tsDelta = pct(DATA.TOLEDO_SELLER.recuperacao[8], DATA.TOLEDO_SELLER.recuperacao[7]);
+  analises.push({
+    tipo: 'danger',
+    titulo: 'Toledo Seller — queda acentuada em mar/26',
+    texto: `Recuperação caiu de R$ ${Math.round(DATA.TOLEDO_SELLER.recuperacao[7]).toLocaleString('pt-BR')} (fev/26) para R$ ${Math.round(DATA.TOLEDO_SELLER.recuperacao[8]).toLocaleString('pt-BR')} (mar/26) — queda de ${Math.round(Math.abs(tsDelta))}%. Provável impacto do problema de SBOX (carteira Seller zerada no período).`
+  });
+
+  // NQ_DIG Seller — queda em mar/26
+  const nqsDelta = pct(DATA.NQ_DIG_SELLER.recuperacao[8], DATA.NQ_DIG_SELLER.recuperacao[7]);
   analises.push({
     tipo: 'danger',
     titulo: 'NQ_DIG Seller — queda em mar/26',
-    texto: `NQ_DIG Seller passou de R$ ${Math.round(DATA.NQ_DIG_SELLER.recuperacao[6]).toLocaleString('pt-BR')} (jan/26) para R$ ${Math.round(DATA.NQ_DIG_SELLER.recuperacao[8]).toLocaleString('pt-BR')} (mar/26) — redução de ${Math.round(Math.abs(nqsDelta))}%. Carteira # caiu de 7.328 para 892, sinalizando provável problema de dados SBOX.`
+    texto: `Recuperação caiu de R$ ${Math.round(DATA.NQ_DIG_SELLER.recuperacao[7]).toLocaleString('pt-BR')} (fev/26) para R$ ${Math.round(DATA.NQ_DIG_SELLER.recuperacao[8]).toLocaleString('pt-BR')} (mar/26) — redução de ${Math.round(Math.abs(nqsDelta))}%. Carteira # caiu de 7.328 para 892, sinalizando provável problema de dados SBOX.`
   });
 
-  // LINK anomalia set/25
-  analises.push({
-    tipo: 'warn',
-    titulo: 'LINK — faturamento anômalo em set/25',
-    texto: `O faturamento de LINK em set/25 foi R$ 245.713, muito acima da média. Inclui recuperação retroativa de jun–ago/25 não paga (R$ 145.010). Valor recorrente estimado: ~R$ 100.703.`
-  });
-
-  // LINK anomalia fev/26
+  // LINK — fev/26 anômalo
   analises.push({
     tipo: 'warn',
     titulo: 'LINK — faturamento anômalo em fev/26',
-    texto: `Fev/26 de LINK inclui recuperação de ação judicial (cliente Marlon). Valor superior à recuperação normal — deve ser desconsiderado em tendências.`
+    texto: `Fev/26 inclui recuperação de ação judicial (cliente Marlon). Valor superior à recuperação normal — deve ser desconsiderado em análises de tendência.`
   });
 
-  // Queda faturamento total
-  const maxFat = Math.max(...totalFat);
-  const maxFatIdx = totalFat.indexOf(maxFat);
-  const quedaFat = pct(totalFat[10], maxFat);
-  analises.push({
-    tipo: 'danger',
-    titulo: 'Faturamento total em queda contínua',
-    texto: `Pico de faturamento em ${MONTHS[maxFatIdx]}: R$ ${Math.round(maxFat).toLocaleString('pt-BR')}. Mai/26: R$ ${Math.round(totalFat[10]).toLocaleString('pt-BR')} — queda de ${Math.round(Math.abs(quedaFat))}% em relação ao pico.`
-  });
-
-  // NOVAQUEST queda
-  const nqFatDelta = pct(DATA.NOVAQUEST.faturamento[10], DATA.NOVAQUEST.faturamento[5]);
+  // NOVAQUEST — queda fev–mai
+  const nqDelta = pct(DATA.NOVAQUEST.faturamento[10], DATA.NOVAQUEST.faturamento[7]);
   analises.push({
     tipo: 'warn',
-    titulo: 'NOVAQUEST — faturamento em declínio desde dez/25',
-    texto: `Faturamento passou de R$ ${Math.round(DATA.NOVAQUEST.faturamento[5]).toLocaleString('pt-BR')} (dez/25) para R$ ${Math.round(DATA.NOVAQUEST.faturamento[10]).toLocaleString('pt-BR')} (mai/26) — queda de ${Math.round(Math.abs(nqFatDelta))}%.`
+    titulo: 'NOVAQUEST — faturamento em declínio (fev–mai/26)',
+    texto: `Faturamento passou de R$ ${Math.round(DATA.NOVAQUEST.faturamento[7]).toLocaleString('pt-BR')} (fev/26) para R$ ${Math.round(DATA.NOVAQUEST.faturamento[10]).toLocaleString('pt-BR')} (mai/26) — queda de ${Math.round(Math.abs(nqDelta))}%.`
   });
 
-  // Comparativo H2 vs H1
-  const avgH2Recup = avg(totalRecup, Q23_IDX);
-  const avgH1Recup = avg(totalRecup, H1_IDX);
-  const diffH = pct(avgH1Recup, avgH2Recup);
-  analises.push({
-    tipo: diffH < 0 ? 'danger' : 'info',
-    titulo: 'Q2/3 2025 vs Jan–Mai 2026 — recuperação consolidada',
-    texto: `Média mensal Q2/3 2025: R$ ${Math.round(avgH2Recup).toLocaleString('pt-BR')} | Média Jan–Mai/26: R$ ${Math.round(avgH1Recup).toLocaleString('pt-BR')} → variação: ${fmtDelta(diffH)}.`
-  });
-
-  const colorMap = { danger: ['var(--red-light)','var(--red)','#a32d2d'], warn: ['var(--amber-light)','var(--amber)','#854f0b'], info: ['var(--blue-light)','var(--blue)','#185fa5'] };
+  const colorMap = { danger: ['var(--red-light)','var(--red)','#991b1b'], warn: ['var(--amber-light)','var(--amber)','#92400e'], info: ['var(--blue-light)','var(--blue)','#1d4ed8'] };
   container.innerHTML = analises.map(a => {
     const [bg, border, tc] = colorMap[a.tipo];
     return `<div style="background:${bg};border-left:3px solid ${border};border-radius:0 6px 6px 0;padding:12px 16px;margin-bottom:12px">
@@ -725,13 +708,11 @@ function buildAnalises() {
     </div>`;
   }).join('');
 
-  // Notas da planilha
   container.innerHTML += `
     <hr>
-    <div style="font-size:12px;font-weight:500;color:var(--text2);margin:16px 0 10px;text-transform:uppercase;letter-spacing:.04em">Notas e observações da planilha original</div>
-    <div class="note"><strong>SBOX Fev–Abr/26:</strong> Tabelas inconsistentes afetando principalmente carteira Seller. Infra trabalhando para corrigir — podem haver ajustes retroativos.</div>
-    <div class="note"><strong>NVQ DIG Fev/26 buyer:</strong> Valor de recuperação não disponível (email truncado). Faturamento confirmado: R$ 58.948,11.</div>
-    <div class="note"><strong>Emails mai/26:</strong> Não encontrados na pasta Fechamento até 09/06/2026. Dados de mai/26 incluídos conforme disponíveis nas tabelas individuais.</div>
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin:16px 0 10px;text-transform:uppercase;letter-spacing:.04em">Observações</div>
+    <div class="note"><strong>SBOX Fev–Abr/26:</strong> Tabelas inconsistentes afetando principalmente carteira Seller. Podem haver ajustes retroativos.</div>
+    <div class="note"><strong>Emails mai/26:</strong> Não encontrados na pasta Fechamento até 09/06/2026. Dados incluídos conforme disponíveis nas tabelas individuais.</div>
   `;
 }
 
