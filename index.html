@@ -90,13 +90,13 @@
 <div class="page">
 
   <h1>Acompanhamento de indicadores — escritórios</h1>
-  <p class="subtitle">Jul/2025 a Mai/2026 · Dados: Recuperação, Faturamento, Carteira # e Carteira $</p>
+  <p class="subtitle">Jul/2025 a Jun/2026 · Dados: Recuperação, Faturamento, Carteira # e Carteira $</p>
 
   <div class="tabs">
     <button class="tab active" data-tab="evolucao">Evolução temporal</button>
     <button class="tab" data-tab="consolidado">Consolidado por escritório</button>
     <button class="tab" data-tab="comp1">Q2/3 2025 vs 2026</button>
-    <button class="tab" data-tab="comp2">Jan/26 vs Fev–Mai/26</button>
+    <button class="tab" data-tab="comp2">Jan/26 vs Fev–Jun/26</button>
     <button class="tab" data-tab="analises">Análises e alertas</button>
   </div>
 
@@ -187,7 +187,7 @@
 
   <!-- TAB 4: COMPARATIVO 2 -->
   <div class="tab-panel card" id="tab-comp2">
-    <div class="section-title">Jan/2026 (baseline) vs média Fev–Mai/2026</div>
+    <div class="section-title">Jan/2026 (baseline) vs média Fev–Jun/2026</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Variação de cada escritório partindo de janeiro como base.</p>
     <div class="grid2" style="margin-bottom:24px">
       <div>
@@ -220,7 +220,7 @@ Chart.defaults.plugins.legend.labels.color = '#111827';
 Chart.defaults.scale.grid.color = 'rgba(0,0,0,0.07)';
 Chart.defaults.scale.ticks.color = '#6b7280';
 
-const MONTHS = ['jul/25','ago/25','set/25','out/25','nov/25','dez/25','jan/26','fev/26','mar/26','abr/26','mai/26'];
+const MONTHS = ['jul/25','ago/25','set/25','out/25','nov/25','dez/25','jan/26','fev/26','mar/26','abr/26','mai/26','jun/26'];
 
 function fmtLabel(v) {
   if (v === null || v === undefined) return '';
@@ -249,21 +249,21 @@ const BAR_DATALABELS = {
   formatter: fmtLabel
 };
 const Q23_IDX = [0,1,2,3,4,5];
-const H1_IDX = [6,7,8,9,10];
+const H1_IDX = [6,7,8,9,10,11];
 const JAN_IDX = 6;
-const FEV_MAI_IDX = [7,8,9,10];
+const FEV_MAI_IDX = [7,8,9,10,11];
 
 const BUYER_OFFICES = ['KITEI','LINK','NOVAQUEST','NQ_DIG_BUYER','TOLEDO_BUYER'];
 const SELLER_OFFICES = ['NQ_DIG_SELLER','TOLEDO_SELLER'];
 
 const DATA = {
-  KITEI:         { recuperacao:[234371.69,287903.30,282933.33,290538.53,279864.17,238571.75,213621.26,171661.54,222005.69,144672.08,106442.51], faturamento:[73188.15,63551.93,48892.55,99897.23,104518.58,84648.03,56222.13,37171.79,106656.74,48628.78,31536.45], carteira_n:[68348,74954,74788,74661,74401,74631,74264,74782,72321,68750,62383], carteira_v:[13487659,14703492,14883164,14566790,13972328,14550024,13812700,14331661,13958624,13223955,15528614] },
-  LINK:          { recuperacao:[279662.57,245091.48,337361.93,410082.30,299406.23,328076.40,353295.38,407536.57,258349.60,148241.82,61371.50], faturamento:[61722.45,59525.54,245713.33,123955.43,72987.96,85703.34,88922.22,109265.10,56498.68,34797.59,12580.10], carteira_n:[60645,63203,96251,101960,60808,60235,59287,59326,45943,48939,38155], carteira_v:[79681982,85247508,127452130,135633563,84306809,84240365,92287645,92819903,53428245,56110585,66778663] },
-  NOVAQUEST:     { recuperacao:[310961.97,305168.10,377613.39,355120.61,357944.67,412141.17,353326.42,320096.72,249841.15,221993.46,132371.40], faturamento:[22148.85,28876.16,39495.16,52889.94,53187.80,43926.01,45062.57,25982.01,29065.12,36148.64,22992.03], carteira_n:[17920,20672,21722,19822,22193,23144,21857,23362,21760,21808,17589], carteira_v:[27051520,31943460,34491699,30421984,34412101,36710429,35920067,38010482,34973302,34770116,28442455] },
-  NQ_DIG_BUYER:  { recuperacao:[92004.90,63625.25,74151.25,76898.12,80930.96,64752.11,67207.32,65041.16,52933.34,84948.66,44570.48], faturamento:[26564.49,11033.26,12204.17,21490.02,15549.82,12904.26,14267.19,15278.67,13079.13,44736.11,12957.61], carteira_n:[35225,30482,31431,30545,30983,30404,30563,30403,29800,29113,26283], carteira_v:[6700678,5711512,5840405,5687651,5729202,5562203,5573799,5512302,5407043,5257216,5263895] },
-  NQ_DIG_SELLER: { recuperacao:[125691.82,125449.10,155748.10,129134.28,106110.86,148440.84,129223.54,103841.27,105335.04,97610.08,19447.83], faturamento:[32747.00,48226.42,49404.33,56184.11,32280.06,81381.27,74939.73,43669.44,40318.06,44870.74,5390.07], carteira_n:[9627,7290,9661,6817,7223,6691,7328,6666,892,1177,15442], carteira_v:[22453807,16749607,22883484,16249191,18660957,16726170,18307282,17430679,2073144,2628659,28775987] },
-  TOLEDO_BUYER:  { recuperacao:[261462.13,313456.76,332785.49,372654.87,325185.42,315709.21,351626.63,324525.83,274326.31,201801.05,135175.36], faturamento:[21840.50,37062.14,30123.49,38397.94,31413.91,23603.39,32530.13,27955.99,38387.22,22390.57,26142.52], carteira_n:[21256,18102,18855,18252,18625,17326,18737,17397,18024,16296,13387], carteira_v:[33939601,27418470,29001680,30250626,30052166,29463117,31978452,30184430,31279471,28439352,22038925] },
-  TOLEDO_SELLER: { recuperacao:[114099.32,109067.33,116525.55,126072.61,127190.44,135717.87,146114.76,132249.96,38696.41,68010.90,15945.89], faturamento:[29544.81,24373.62,36348.43,39224.45,40924.87,35739.58,51320.64,35215.72,15950.59,24781.98,3188.44], carteira_n:[7983,11313,8492,11250,9515,10598,9812,10415,573,1086,20503], carteira_v:[17730388,26774917,20527484,27684954,23290578,27703859,26001180,27577186,1017329,2310747,38792823] }
+  KITEI:         { recuperacao:[234371.69,287903.30,282933.33,290538.53,279864.17,238571.75,213621.26,171661.54,222005.69,144672.08,106442.51,2563.20], faturamento:[73188.15,63551.93,48892.55,99897.23,104518.58,84648.03,56222.13,37171.79,106656.74,48628.78,31536.45,1844.51], carteira_n:[68348,74954,74788,74661,74401,74631,74264,74782,72321,68750,62383,23], carteira_v:[13487659,14703492,14883164,14566790,13972328,14550024,13812700,14331661,13958624,13223955,15528614,4685] },
+  LINK:          { recuperacao:[279662.57,245091.48,337361.93,410082.30,299406.23,328076.40,353295.38,407536.57,258349.60,148241.82,61371.50,46703.22], faturamento:[61722.45,59525.54,245713.33,123955.43,72987.96,85703.34,88922.22,109265.10,56498.68,34797.59,12580.10,12147.45], carteira_n:[60645,63203,96251,101960,60808,60235,59287,59326,45943,48939,38155,22960], carteira_v:[79681982,85247508,127452130,135633563,84306809,84240365,92287645,92819903,53428245,56110585,66778663,45214278] },
+  NOVAQUEST:     { recuperacao:[310961.97,305168.10,377613.39,355120.61,357944.67,412141.17,353326.42,320096.72,249841.15,221993.46,132371.40,707.59], faturamento:[22148.85,28876.16,39495.16,52889.94,53187.80,43926.01,45062.57,25982.01,29065.12,36148.64,22992.03,255.79], carteira_n:[17920,20672,21722,19822,22193,23144,21857,23362,21760,21808,17589,8], carteira_v:[27051520,31943460,34491699,30421984,34412101,36710429,35920067,38010482,34973302,34770116,28442455,5708] },
+  NQ_DIG_BUYER:  { recuperacao:[92004.90,63625.25,74151.25,76898.12,80930.96,64752.11,67207.32,65041.16,52933.34,84948.66,44570.48,930.29], faturamento:[26564.49,11033.26,12204.17,21490.02,15549.82,12904.26,14267.19,15278.67,13079.13,44736.11,12957.61,696.10], carteira_n:[35225,30482,31431,30545,30983,30404,30563,30403,29800,29113,26283,17], carteira_v:[6700678,5711512,5840405,5687651,5729202,5562203,5573799,5512302,5407043,5257216,5263895,2153] },
+  NQ_DIG_SELLER: { recuperacao:[125691.82,125449.10,155748.10,129134.28,106110.86,148440.84,129223.54,103841.27,105335.04,97610.08,19447.83,38064.21], faturamento:[32747.00,48226.42,49404.33,56184.11,32280.06,81381.27,74939.73,43669.44,40318.06,44870.74,5390.07,11515.98], carteira_n:[9627,7290,9661,6817,7223,6691,7328,6666,892,1177,15442,10744], carteira_v:[22453807,16749607,22883484,16249191,18660957,16726170,18307282,17430679,2073144,2628659,28775987,22193627] },
+  TOLEDO_BUYER:  { recuperacao:[261462.13,313456.76,332785.49,372654.87,325185.42,315709.21,351626.63,324525.83,274326.31,201801.05,135175.36,2517.22], faturamento:[21840.50,37062.14,30123.49,38397.94,31413.91,23603.39,32530.13,27955.99,38387.22,22390.57,26142.52,741.67], carteira_n:[21256,18102,18855,18252,18625,17326,18737,17397,18024,16296,13387,6], carteira_v:[33939601,27418470,29001680,30250626,30052166,29463117,31978452,30184430,31279471,28439352,22038925,5854] },
+  TOLEDO_SELLER: { recuperacao:[114099.32,109067.33,116525.55,126072.61,127190.44,135717.87,146114.76,132249.96,38696.41,68010.90,15945.89,54704.46], faturamento:[29544.81,24373.62,36348.43,39224.45,40924.87,35739.58,51320.64,35215.72,15950.59,24781.98,3188.44,13361.33], carteira_n:[7983,11313,8492,11250,9515,10598,9812,10415,573,1086,20503,16814], carteira_v:[17730388,26774917,20527484,27684954,23290578,27703859,26001180,27577186,1017329,2310747,38792823,34090665] }
 };
 
 const OFFICE_LABELS = { KITEI:'KITEI', LINK:'LINK', NOVAQUEST:'NOVAQUEST', NQ_DIG_BUYER:'NQ_DIG Buyer', NQ_DIG_SELLER:'NQ_DIG Seller', TOLEDO_BUYER:'Toledo Buyer', TOLEDO_SELLER:'Toledo Seller' };
@@ -306,10 +306,10 @@ function buildGroupKPIs(rowId, offices) {
   }
 
   row.innerHTML =
-    kpi('Recuperação — mai/26',  recup[10], recup[9], true)  +
-    kpi('Faturamento — mai/26',  fat[10],   fat[9],   true)  +
-    kpi('Carteira # — mai/26',   cn[10],    cn[9],    false) +
-    kpi('Carteira R$ — mai/26',  cv[10],    cv[9],    true);
+    kpi('Recuperação — jun/26',  recup[11], recup[10], true)  +
+    kpi('Faturamento — jun/26',  fat[11],   fat[10],   true)  +
+    kpi('Carteira # — jun/26',   cn[11],    cn[10],    false) +
+    kpi('Carteira R$ — jun/26',  cv[11],    cv[10],    true);
 }
 
 function buildKPIs() {
@@ -423,8 +423,8 @@ function buildTableConsolidated() {
     return 'R$ '+Math.round(v).toLocaleString('pt-BR');
   }
 
-  // Traffic-light: only mar/26=8, abr/26=9, mai/26=10
-  const TRAFFIC_IDX = [8, 9, 10];
+  // Traffic-light: mar/26=8, abr/26=9, mai/26=10, jun/26=11
+  const TRAFFIC_IDX = [8, 9, 10, 11];
   const TRAFFIC = [
     { bg: '#dcfce7', text: '#166534' }, // green  — best delta
     { bg: '#fef9c3', text: '#854d0e' }, // amber  — middle
@@ -452,7 +452,7 @@ function buildTableConsolidated() {
     });
 
     const JUL_JAN = [0,1,2,3,4,5,6];   // jul/25–jan/26
-    const FEV_MAI = [7,8,9,10];         // fev/26–mai/26
+    const FEV_MAI = [7,8,9,10,11];      // fev/26–jun/26
 
     function avgArr(arr, idxs) { return idxs.reduce((s,i) => s+arr[i], 0) / idxs.length; }
 
@@ -493,7 +493,7 @@ function buildTableConsolidated() {
       html += `<th${hi}>${m}</th>`;
       if (i === 6) html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø jul–jan</th>';
     });
-    html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø fev–mai</th>';
+    html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø fev–jun</th>';
     html += '</tr></thead><tbody>';
 
     OFFICES.forEach(o => { html += buildRow(DATA[o][metric], o, OFFICE_LABELS[o], false); });
@@ -514,7 +514,7 @@ function buildTableConsolidated() {
     const arrow = positive ? '▲' : '▼';
     document.getElementById(divId).innerHTML =
       `<span style="background:${bg};color:${color};padding:3px 10px;border-radius:4px;font-weight:600">` +
-      `${arrow} ${Math.abs(Math.round(d))}% · Ø fev–mai vs Ø jul–jan</span>`;
+      `${arrow} ${Math.abs(Math.round(d))}% · Ø fev–jun vs Ø jul–jan</span>`;
   }
 
   buildTable('carteira_n',  'tbl-cn');    buildVariation('carteira_n',  'var-cn');
@@ -566,7 +566,7 @@ function buildComp1() {
       labels,
       datasets: [
         { label: 'Q2/3 2025 (média mensal)', data: h2vals, backgroundColor: '#185fa5cc', borderColor:'#185fa5', borderWidth:1 },
-        { label: 'Jan–Mai/2026 (média mensal)', data: h1vals, backgroundColor: '#0f6e56cc', borderColor:'#0f6e56', borderWidth:1 }
+        { label: 'Jan–Jun/2026 (média mensal)', data: h1vals, backgroundColor: '#0f6e56cc', borderColor:'#0f6e56', borderWidth:1 }
       ]
     },
     options: {
@@ -585,7 +585,7 @@ function buildComp1() {
 function buildComp2() {
   function buildTable(metric, tableId) {
     const tbl = document.getElementById(tableId);
-    let html = '<thead><tr><th>Escritório</th><th>Jan/26</th><th>Méd. Fev–Mai/26</th><th>Variação</th></tr></thead><tbody>';
+    let html = '<thead><tr><th>Escritório</th><th>Jan/26</th><th>Méd. Fev–Jun/26</th><th>Variação</th></tr></thead><tbody>';
     OFFICES.forEach(o => {
       const jan = DATA[o][metric][JAN_IDX];
       const rest = avg(DATA[o][metric], FEV_MAI_IDX);
@@ -624,7 +624,7 @@ function buildComp2() {
       labels,
       datasets: [
         { label: 'Jan/2026', data: janVals, backgroundColor: '#534ab7cc', borderColor:'#534ab7', borderWidth:1 },
-        { label: 'Méd. Fev–Mai/2026', data: restVals, backgroundColor: '#993c1dcc', borderColor:'#993c1d', borderWidth:1 }
+        { label: 'Méd. Fev–Jun/2026', data: restVals, backgroundColor: '#993c1dcc', borderColor:'#993c1d', borderWidth:1 }
       ]
     },
     options: {
@@ -644,31 +644,31 @@ function buildAnalises() {
   const container = document.getElementById('analises-content');
   const totalRecup = getConsolidated('recuperacao');
   const totalFat   = getConsolidated('faturamento');
-  const FEV_MAI    = [7,8,9,10];
+  const FEV_MAI    = [7,8,9,10,11];
 
   const analises = [];
 
-  // Variação recuperação consolidada fev–mai
+  // Variação recuperação consolidada fev–jun
   const avgFevMaiRecup = avg(totalRecup, FEV_MAI);
   const avgJulJanRecup = avg(totalRecup, [0,1,2,3,4,5,6]);
   const diffRecup = pct(avgFevMaiRecup, avgJulJanRecup);
   analises.push({
     tipo: diffRecup < -10 ? 'danger' : diffRecup < 0 ? 'warn' : 'info',
-    titulo: 'Recuperação consolidada — Ø fev–mai vs Ø jul–jan',
-    texto: `Média jul–jan: R$ ${Math.round(avgJulJanRecup).toLocaleString('pt-BR')} | Média fev–mai: R$ ${Math.round(avgFevMaiRecup).toLocaleString('pt-BR')} → variação: ${fmtDelta(diffRecup)}.`
+    titulo: 'Recuperação consolidada — Ø fev–jun vs Ø jul–jan',
+    texto: `Média jul–jan: R$ ${Math.round(avgJulJanRecup).toLocaleString('pt-BR')} | Média fev–jun: R$ ${Math.round(avgFevMaiRecup).toLocaleString('pt-BR')} → variação: ${fmtDelta(diffRecup)}.`
   });
 
-  // Variação faturamento consolidado fev–mai
+  // Variação faturamento consolidado fev–jun
   const avgFevMaiFat = avg(totalFat, FEV_MAI);
   const avgJulJanFat = avg(totalFat, [0,1,2,3,4,5,6]);
   const diffFat = pct(avgFevMaiFat, avgJulJanFat);
   analises.push({
     tipo: diffFat < -10 ? 'danger' : diffFat < 0 ? 'warn' : 'info',
-    titulo: 'Faturamento consolidado — Ø fev–mai vs Ø jul–jan',
-    texto: `Média jul–jan: R$ ${Math.round(avgJulJanFat).toLocaleString('pt-BR')} | Média fev–mai: R$ ${Math.round(avgFevMaiFat).toLocaleString('pt-BR')} → variação: ${fmtDelta(diffFat)}.`
+    titulo: 'Faturamento consolidado — Ø fev–jun vs Ø jul–jan',
+    texto: `Média jul–jan: R$ ${Math.round(avgJulJanFat).toLocaleString('pt-BR')} | Média fev–jun: R$ ${Math.round(avgFevMaiFat).toLocaleString('pt-BR')} → variação: ${fmtDelta(diffFat)}.`
   });
 
-  // Toledo Seller — colapso mar/26 (dentro de fev–mai)
+  // Toledo Seller — colapso mar/26 (dentro de fev–jun)
   const tsDelta = pct(DATA.TOLEDO_SELLER.recuperacao[8], DATA.TOLEDO_SELLER.recuperacao[7]);
   analises.push({
     tipo: 'danger',
@@ -691,12 +691,12 @@ function buildAnalises() {
     texto: `Fev/26 inclui recuperação de ação judicial (cliente Marlon). Valor superior à recuperação normal — deve ser desconsiderado em análises de tendência.`
   });
 
-  // NOVAQUEST — queda fev–mai
+  // NOVAQUEST — queda fev–jun
   const nqDelta = pct(DATA.NOVAQUEST.faturamento[10], DATA.NOVAQUEST.faturamento[7]);
   analises.push({
     tipo: 'warn',
-    titulo: 'NOVAQUEST — faturamento em declínio (fev–mai/26)',
-    texto: `Faturamento passou de R$ ${Math.round(DATA.NOVAQUEST.faturamento[7]).toLocaleString('pt-BR')} (fev/26) para R$ ${Math.round(DATA.NOVAQUEST.faturamento[10]).toLocaleString('pt-BR')} (mai/26) — queda de ${Math.round(Math.abs(nqDelta))}%.`
+    titulo: 'NOVAQUEST — faturamento em declínio (fev–jun/26)',
+    texto: `Faturamento passou de R$ ${Math.round(DATA.NOVAQUEST.faturamento[7]).toLocaleString('pt-BR')} (fev/26) para R$ ${Math.round(DATA.NOVAQUEST.faturamento[11]).toLocaleString('pt-BR')} (jun/26) — queda de ${Math.round(Math.abs(nqDelta))}%.`
   });
 
   const colorMap = { danger: ['var(--red-light)','var(--red)','#991b1b'], warn: ['var(--amber-light)','var(--amber)','#92400e'], info: ['var(--blue-light)','var(--blue)','#1d4ed8'] };
