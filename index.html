@@ -107,15 +107,15 @@
     <div class="grid2" style="margin-bottom:28px">
       <div>
         <div class="legend" style="margin-bottom:6px">
-          <span class="legend-item"><span class="legend-dot" style="background:#185fa5"></span>Carteira # (esq.)</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#534ab7"></span>Carteira R$ (dir.)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#009EE3"></span>Carteira # (esq.)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#FFE600"></span>Carteira R$ (dir.)</span>
         </div>
         <div style="height:280px;position:relative"><canvas id="chartSellerCarteira" role="img" aria-label="Seller carteira"></canvas></div>
       </div>
       <div>
         <div class="legend" style="margin-bottom:6px">
-          <span class="legend-item"><span class="legend-dot" style="background:#0f6e56"></span>Recuperação</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#854f0b"></span>Faturamento</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#009EE3"></span>Recuperação</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#FFE600"></span>Faturamento</span>
         </div>
         <div style="height:280px;position:relative"><canvas id="chartSellerRecupFat" role="img" aria-label="Seller recuperação e faturamento"></canvas></div>
       </div>
@@ -126,15 +126,15 @@
     <div class="grid2">
       <div>
         <div class="legend" style="margin-bottom:6px">
-          <span class="legend-item"><span class="legend-dot" style="background:#185fa5"></span>Carteira # (esq.)</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#534ab7"></span>Carteira R$ (dir.)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#009EE3"></span>Carteira # (esq.)</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#FFE600"></span>Carteira R$ (dir.)</span>
         </div>
         <div style="height:280px;position:relative"><canvas id="chartBuyerCarteira" role="img" aria-label="Buyer carteira"></canvas></div>
       </div>
       <div>
         <div class="legend" style="margin-bottom:6px">
-          <span class="legend-item"><span class="legend-dot" style="background:#0f6e56"></span>Recuperação</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#854f0b"></span>Faturamento</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#009EE3"></span>Recuperação</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#FFE600"></span>Faturamento</span>
         </div>
         <div style="height:280px;position:relative"><canvas id="chartBuyerRecupFat" role="img" aria-label="Buyer recuperação e faturamento"></canvas></div>
       </div>
@@ -333,8 +333,8 @@ function buildCarteiraChart(canvasId, offices, ref) {
   return new Chart(ctx, {
     type: 'line',
     data: { labels: MONTHS, datasets: [
-      { label: 'Carteira #', data: sumGroup(offices, 'carteira_n'), borderColor: '#185fa5', backgroundColor: '#185fa522', tension: 0.3, pointRadius: 3, borderWidth: 2, yAxisID: 'yN' },
-      { label: 'Carteira R$', data: sumGroup(offices, 'carteira_v'), borderColor: '#534ab7', backgroundColor: '#534ab722', tension: 0.3, pointRadius: 3, borderWidth: 2, yAxisID: 'yV' }
+      { label: 'Carteira #', data: sumGroup(offices, 'carteira_n'), borderColor: '#009EE3', backgroundColor: '#009EE322', tension: 0.3, pointRadius: 3, borderWidth: 2, yAxisID: 'yN' },
+      { label: 'Carteira R$', data: sumGroup(offices, 'carteira_v'), borderColor: '#FFE600', backgroundColor: '#FFE60033', tension: 0.3, pointRadius: 3, borderWidth: 2, yAxisID: 'yV' }
     ]},
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -359,8 +359,8 @@ function buildRecupFatChart(canvasId, offices, ref) {
   return new Chart(ctx, {
     type: 'line',
     data: { labels: MONTHS, datasets: [
-      { label: 'Recuperação', data: sumGroup(offices, 'recuperacao'), borderColor: '#0f6e56', backgroundColor: '#0f6e5622', tension: 0.3, pointRadius: 3, borderWidth: 2 },
-      { label: 'Faturamento', data: sumGroup(offices, 'faturamento'), borderColor: '#854f0b', backgroundColor: '#854f0b22', tension: 0.3, pointRadius: 3, borderWidth: 2 }
+      { label: 'Recuperação', data: sumGroup(offices, 'recuperacao'), borderColor: '#009EE3', backgroundColor: '#009EE322', tension: 0.3, pointRadius: 3, borderWidth: 2 },
+      { label: 'Faturamento', data: sumGroup(offices, 'faturamento'), borderColor: '#FFE600', backgroundColor: '#FFE60033', tension: 0.3, pointRadius: 3, borderWidth: 2 }
     ]},
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -395,8 +395,8 @@ function buildChartConsolidated() {
     data: {
       labels: MONTHS,
       datasets: [
-        { label: 'Recuperação', data: recup, backgroundColor: '#185fa5cc', borderColor: '#185fa5', borderWidth: 1 },
-        { label: 'Faturamento', data: fat, backgroundColor: '#0f6e56cc', borderColor: '#0f6e56', borderWidth: 1 }
+        { label: 'Recuperação', data: recup, backgroundColor: '#009EE3cc', borderColor: '#009EE3', borderWidth: 1 },
+        { label: 'Faturamento', data: fat, backgroundColor: '#FFE600cc', borderColor: '#FFE600', borderWidth: 1 }
       ]
     },
     options: {
@@ -441,14 +441,13 @@ function buildTableConsolidated() {
     trafficMap['__total__'] = {};
 
     TRAFFIC_IDX.forEach(ci => {
-      const entries = OFFICES.map(o => {
-        const arr = DATA[o][metric];
-        return { key: o, d: pct(arr[ci], arr[ci-1]) };
-      });
-      // Top 3 by absolute variation
-      const top3 = [...entries].sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 3);
-      // Among top3, rank by absolute value descending: largest=red(2), mid=amber(1), smallest=green(0)
-      top3.forEach((x, r) => { trafficMap[x.key][ci] = 2 - r; }); // r=0(largest)→2(red), r=2(smallest)→0(green)
+      const entries = OFFICES.map(o => ({ key: o, v: DATA[o][metric][ci] }));
+      const sorted = [...entries].sort((a, b) => a.v - b.v); // crescente: menor primeiro
+      // Piores: vermelho e amarelo
+      trafficMap[sorted[0].key][ci] = 2; // menor → vermelho
+      trafficMap[sorted[1].key][ci] = 1; // segundo menor → amarelo
+      // Melhor: verde
+      trafficMap[sorted[sorted.length - 1].key][ci] = 0; // maior → verde
     });
 
     const JUL_JAN = [0,1,2,3,4,5,6];   // jul/25–jan/26
@@ -526,7 +525,7 @@ function buildTableConsolidated() {
 function buildComp1() {
   function buildTable(metric, tableId) {
     const tbl = document.getElementById(tableId);
-    let html = '<thead><tr><th>Escritório</th><th>Q2/3 2025 (média)</th><th>Jan–Mai/26 (média)</th><th>Variação</th></tr></thead><tbody>';
+    let html = '<thead><tr><th>Escritório</th><th>Q2/3 2025 (média)</th><th>Jan–Jun/26 (média)</th><th>Variação</th></tr></thead><tbody>';
     OFFICES.forEach(o => {
       const a = avg(DATA[o][metric], Q23_IDX);
       const b = avg(DATA[o][metric], H1_IDX);
@@ -565,8 +564,8 @@ function buildComp1() {
     data: {
       labels,
       datasets: [
-        { label: 'Q2/3 2025 (média mensal)', data: h2vals, backgroundColor: '#185fa5cc', borderColor:'#185fa5', borderWidth:1 },
-        { label: 'Jan–Jun/2026 (média mensal)', data: h1vals, backgroundColor: '#0f6e56cc', borderColor:'#0f6e56', borderWidth:1 }
+        { label: 'Q2/3 2025 (média mensal)', data: h2vals, backgroundColor: '#009EE3cc', borderColor:'#009EE3', borderWidth:1 },
+        { label: 'Jan–Jun/2026 (média mensal)', data: h1vals, backgroundColor: '#FFE600cc', borderColor:'#FFE600', borderWidth:1 }
       ]
     },
     options: {
@@ -623,8 +622,8 @@ function buildComp2() {
     data: {
       labels,
       datasets: [
-        { label: 'Jan/2026', data: janVals, backgroundColor: '#534ab7cc', borderColor:'#534ab7', borderWidth:1 },
-        { label: 'Méd. Fev–Jun/2026', data: restVals, backgroundColor: '#993c1dcc', borderColor:'#993c1d', borderWidth:1 }
+        { label: 'Jan/2026', data: janVals, backgroundColor: '#009EE3cc', borderColor:'#009EE3', borderWidth:1 },
+        { label: 'Méd. Fev–Jun/2026', data: restVals, backgroundColor: '#FFE600cc', borderColor:'#FFE600', borderWidth:1 }
       ]
     },
     options: {
@@ -642,61 +641,79 @@ function buildComp2() {
 
 function buildAnalises() {
   const container = document.getElementById('analises-content');
-  const totalRecup = getConsolidated('recuperacao');
-  const totalFat   = getConsolidated('faturamento');
-  const FEV_MAI    = [7,8,9,10,11];
-
+  const JAN = 6, JUN = 11;
   const analises = [];
 
-  // Variação recuperação consolidada fev–jun
-  const avgFevMaiRecup = avg(totalRecup, FEV_MAI);
-  const avgJulJanRecup = avg(totalRecup, [0,1,2,3,4,5,6]);
-  const diffRecup = pct(avgFevMaiRecup, avgJulJanRecup);
+  // 1. Recuperação consolidada jun vs jan
+  const totalRecupJan = OFFICES.reduce((s, o) => s + DATA[o].recuperacao[JAN], 0);
+  const totalRecupJun = OFFICES.reduce((s, o) => s + DATA[o].recuperacao[JUN], 0);
+  const diffRecup = pct(totalRecupJun, totalRecupJan);
   analises.push({
     tipo: diffRecup < -10 ? 'danger' : diffRecup < 0 ? 'warn' : 'info',
-    titulo: 'Recuperação consolidada — Ø fev–jun vs Ø jul–jan',
-    texto: `Média jul–jan: R$ ${Math.round(avgJulJanRecup).toLocaleString('pt-BR')} | Média fev–jun: R$ ${Math.round(avgFevMaiRecup).toLocaleString('pt-BR')} → variação: ${fmtDelta(diffRecup)}.`
+    titulo: 'Recuperação consolidada — jun/26 vs jan/26',
+    texto: `Jan/26: R$ ${Math.round(totalRecupJan).toLocaleString('pt-BR')} → Jun/26: R$ ${Math.round(totalRecupJun).toLocaleString('pt-BR')} — variação: ${fmtDelta(diffRecup)}.`
   });
 
-  // Variação faturamento consolidado fev–jun
-  const avgFevMaiFat = avg(totalFat, FEV_MAI);
-  const avgJulJanFat = avg(totalFat, [0,1,2,3,4,5,6]);
-  const diffFat = pct(avgFevMaiFat, avgJulJanFat);
+  // 2. Faturamento consolidado jun vs jan
+  const totalFatJan = OFFICES.reduce((s, o) => s + DATA[o].faturamento[JAN], 0);
+  const totalFatJun = OFFICES.reduce((s, o) => s + DATA[o].faturamento[JUN], 0);
+  const diffFat = pct(totalFatJun, totalFatJan);
   analises.push({
     tipo: diffFat < -10 ? 'danger' : diffFat < 0 ? 'warn' : 'info',
-    titulo: 'Faturamento consolidado — Ø fev–jun vs Ø jul–jan',
-    texto: `Média jul–jan: R$ ${Math.round(avgJulJanFat).toLocaleString('pt-BR')} | Média fev–jun: R$ ${Math.round(avgFevMaiFat).toLocaleString('pt-BR')} → variação: ${fmtDelta(diffFat)}.`
+    titulo: 'Faturamento consolidado — jun/26 vs jan/26',
+    texto: `Jan/26: R$ ${Math.round(totalFatJan).toLocaleString('pt-BR')} → Jun/26: R$ ${Math.round(totalFatJun).toLocaleString('pt-BR')} — variação: ${fmtDelta(diffFat)}.`
   });
 
-  // Toledo Seller — colapso mar/26 (dentro de fev–jun)
-  const tsDelta = pct(DATA.TOLEDO_SELLER.recuperacao[8], DATA.TOLEDO_SELLER.recuperacao[7]);
+  // 3. Carteira # consolidada jun vs jan
+  const totalCnJan = OFFICES.reduce((s, o) => s + DATA[o].carteira_n[JAN], 0);
+  const totalCnJun = OFFICES.reduce((s, o) => s + DATA[o].carteira_n[JUN], 0);
+  const diffCn = pct(totalCnJun, totalCnJan);
+  analises.push({
+    tipo: diffCn < -10 ? 'danger' : diffCn < 0 ? 'warn' : 'info',
+    titulo: 'Carteira # consolidada — jun/26 vs jan/26',
+    texto: `Jan/26: ${Math.round(totalCnJan).toLocaleString('pt-BR')} clientes → Jun/26: ${Math.round(totalCnJun).toLocaleString('pt-BR')} clientes — variação: ${fmtDelta(diffCn)}.`
+  });
+
+  // helper: escritório com maior perda por métrica
+  function maiorPerda(metric, fmt) {
+    return OFFICES.map(o => ({
+      label: OFFICE_LABELS[o],
+      jan: DATA[o][metric][JAN],
+      jun: DATA[o][metric][JUN],
+      d: pct(DATA[o][metric][JUN], DATA[o][metric][JAN])
+    })).sort((a, b) => a.d - b.d)[0];
+  }
+
+  // 4. Maior perda — Recuperação
+  const piorRecup = maiorPerda('recuperacao');
   analises.push({
     tipo: 'danger',
-    titulo: 'Toledo Seller — queda acentuada em mar/26',
-    texto: `Recuperação caiu de R$ ${Math.round(DATA.TOLEDO_SELLER.recuperacao[7]).toLocaleString('pt-BR')} (fev/26) para R$ ${Math.round(DATA.TOLEDO_SELLER.recuperacao[8]).toLocaleString('pt-BR')} (mar/26) — queda de ${Math.round(Math.abs(tsDelta))}%. Provável impacto do problema de SBOX (carteira Seller zerada no período).`
+    titulo: `Maior queda de recuperação — jun/26 vs jan/26: ${piorRecup.label}`,
+    texto: `Jan/26: R$ ${Math.round(piorRecup.jan).toLocaleString('pt-BR')} → Jun/26: R$ ${Math.round(piorRecup.jun).toLocaleString('pt-BR')} — variação: ${fmtDelta(piorRecup.d)}.`
   });
 
-  // NQ_DIG Seller — queda em mar/26
-  const nqsDelta = pct(DATA.NQ_DIG_SELLER.recuperacao[8], DATA.NQ_DIG_SELLER.recuperacao[7]);
+  // 5. Maior perda — Faturamento
+  const piorFat = maiorPerda('faturamento');
   analises.push({
     tipo: 'danger',
-    titulo: 'NQ_DIG Seller — queda em mar/26',
-    texto: `Recuperação caiu de R$ ${Math.round(DATA.NQ_DIG_SELLER.recuperacao[7]).toLocaleString('pt-BR')} (fev/26) para R$ ${Math.round(DATA.NQ_DIG_SELLER.recuperacao[8]).toLocaleString('pt-BR')} (mar/26) — redução de ${Math.round(Math.abs(nqsDelta))}%. Carteira # caiu de 7.328 para 892, sinalizando provável problema de dados SBOX.`
+    titulo: `Maior queda de faturamento — jun/26 vs jan/26: ${piorFat.label}`,
+    texto: `Jan/26: R$ ${Math.round(piorFat.jan).toLocaleString('pt-BR')} → Jun/26: R$ ${Math.round(piorFat.jun).toLocaleString('pt-BR')} — variação: ${fmtDelta(piorFat.d)}.`
   });
 
-  // LINK — fev/26 anômalo
+  // 6. Maior perda — Carteira #
+  const piorCn = maiorPerda('carteira_n');
   analises.push({
-    tipo: 'warn',
-    titulo: 'LINK — faturamento anômalo em fev/26',
-    texto: `Fev/26 inclui recuperação de ação judicial (cliente Marlon). Valor superior à recuperação normal — deve ser desconsiderado em análises de tendência.`
+    tipo: 'danger',
+    titulo: `Maior queda de carteira # — jun/26 vs jan/26: ${piorCn.label}`,
+    texto: `Jan/26: ${Math.round(piorCn.jan).toLocaleString('pt-BR')} clientes → Jun/26: ${Math.round(piorCn.jun).toLocaleString('pt-BR')} clientes — variação: ${fmtDelta(piorCn.d)}.`
   });
 
-  // NOVAQUEST — queda fev–jun
-  const nqDelta = pct(DATA.NOVAQUEST.faturamento[10], DATA.NOVAQUEST.faturamento[7]);
+  // 7. Maior perda — Carteira R$
+  const piorCv = maiorPerda('carteira_v');
   analises.push({
-    tipo: 'warn',
-    titulo: 'NOVAQUEST — faturamento em declínio (fev–jun/26)',
-    texto: `Faturamento passou de R$ ${Math.round(DATA.NOVAQUEST.faturamento[7]).toLocaleString('pt-BR')} (fev/26) para R$ ${Math.round(DATA.NOVAQUEST.faturamento[11]).toLocaleString('pt-BR')} (jun/26) — queda de ${Math.round(Math.abs(nqDelta))}%.`
+    tipo: 'danger',
+    titulo: `Maior queda de carteira R$ — jun/26 vs jan/26: ${piorCv.label}`,
+    texto: `Jan/26: R$ ${Math.round(piorCv.jan).toLocaleString('pt-BR')} → Jun/26: R$ ${Math.round(piorCv.jun).toLocaleString('pt-BR')} — variação: ${fmtDelta(piorCv.d)}.`
   });
 
   const colorMap = { danger: ['var(--red-light)','var(--red)','#991b1b'], warn: ['var(--amber-light)','var(--amber)','#92400e'], info: ['var(--blue-light)','var(--blue)','#1d4ed8'] };
@@ -707,13 +724,6 @@ function buildAnalises() {
       <div style="font-size:12px;color:${tc};opacity:0.9">${a.texto}</div>
     </div>`;
   }).join('');
-
-  container.innerHTML += `
-    <hr>
-    <div style="font-size:12px;font-weight:500;color:var(--text2);margin:16px 0 10px;text-transform:uppercase;letter-spacing:.04em">Observações</div>
-    <div class="note"><strong>SBOX Fev–Abr/26:</strong> Tabelas inconsistentes afetando principalmente carteira Seller. Podem haver ajustes retroativos.</div>
-    <div class="note"><strong>Emails mai/26:</strong> Não encontrados na pasta Fechamento até 09/06/2026. Dados incluídos conforme disponíveis nas tabelas individuais.</div>
-  `;
 }
 
 document.querySelectorAll('.tab').forEach(tab => {
