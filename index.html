@@ -96,7 +96,7 @@
     <button class="tab active" data-tab="evolucao">Evolução temporal</button>
     <button class="tab" data-tab="consolidado">Consolidado por escritório</button>
     <button class="tab" data-tab="comp1">Q2/3 2025 vs 2026</button>
-    <button class="tab" data-tab="comp2">Jan/26 vs Fev–Jun/26</button>
+    <button class="tab" data-tab="comp2">Jan/26 vs Fev–Ago/26</button>
     <button class="tab" data-tab="analises">Análises e alertas</button>
   </div>
 
@@ -187,7 +187,7 @@
 
   <!-- TAB 4: COMPARATIVO 2 -->
   <div class="tab-panel card" id="tab-comp2">
-    <div class="section-title">Jan/2026 (baseline) vs média Fev–Jun/2026</div>
+    <div class="section-title">Jan/2026 (baseline) vs média Fev–Ago/2026</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Variação de cada escritório partindo de janeiro como base.</p>
     <div class="grid2" style="margin-bottom:24px">
       <div>
@@ -251,7 +251,7 @@ const BAR_DATALABELS = {
 const Q23_IDX = [0,1,2,3,4,5];
 const H1_IDX = [6,7,8,9,10,11,12,13];
 const JAN_IDX = 6;
-const FEV_MAI_IDX = [7,8,9,10,11];
+const FEV_MAI_IDX = [7,8,9,10,11,12,13];
 
 const BUYER_OFFICES = ['KITEI','LINK','NOVAQUEST','NQ_DIG_BUYER','TOLEDO_BUYER'];
 const SELLER_OFFICES = ['NQ_DIG_SELLER','TOLEDO_SELLER'];
@@ -461,7 +461,7 @@ function buildTableConsolidated() {
     });
 
     const JUL_JAN = [0,1,2,3,4,5,6];   // jul/25–jan/26
-    const FEV_MAI = [7,8,9,10,11];      // fev/26–jun/26
+    const FEV_MAI = [7,8,9,10,11,12,13]; // fev/26–ago/26
 
     function avgArr(arr, idxs) { return idxs.reduce((s,i) => s+arr[i], 0) / idxs.length; }
 
@@ -502,7 +502,7 @@ function buildTableConsolidated() {
       html += `<th${hi}>${m}</th>`;
       if (i === 6) html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø jul–jan</th>';
     });
-    html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø fev–jun</th>';
+    html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø fev–ago</th>';
     html += '</tr></thead><tbody>';
 
     OFFICES.forEach(o => { html += buildRow(DATA[o][metric], o, OFFICE_LABELS[o], false); });
@@ -523,7 +523,7 @@ function buildTableConsolidated() {
     const arrow = positive ? '▲' : '▼';
     document.getElementById(divId).innerHTML =
       `<span style="background:${bg};color:${color};padding:3px 10px;border-radius:4px;font-weight:600">` +
-      `${arrow} ${Math.abs(Math.round(d))}% · Ø fev–jun vs Ø jul–jan</span>`;
+      `${arrow} ${Math.abs(Math.round(d))}% · Ø fev–ago vs Ø jul–jan</span>`;
   }
 
   buildTable('carteira_n',  'tbl-cn');    buildVariation('carteira_n',  'var-cn');
@@ -594,7 +594,7 @@ function buildComp1() {
 function buildComp2() {
   function buildTable(metric, tableId) {
     const tbl = document.getElementById(tableId);
-    let html = '<thead><tr><th>Escritório</th><th>Jan/26</th><th>Méd. Fev–Jun/26</th><th>Variação</th></tr></thead><tbody>';
+    let html = '<thead><tr><th>Escritório</th><th>Jan/26</th><th>Méd. Fev–Ago/26</th><th>Variação</th></tr></thead><tbody>';
     OFFICES.forEach(o => {
       const jan = DATA[o][metric][JAN_IDX];
       const rest = avg(DATA[o][metric], FEV_MAI_IDX);
@@ -633,7 +633,7 @@ function buildComp2() {
       labels,
       datasets: [
         { label: 'Jan/2026', data: janVals, backgroundColor: '#009EE3cc', borderColor:'#009EE3', borderWidth:1 },
-        { label: 'Méd. Fev–Jun/2026', data: restVals, backgroundColor: '#FFE600cc', borderColor:'#FFE600', borderWidth:1 }
+        { label: 'Méd. Fev–Ago/2026', data: restVals, backgroundColor: '#FFE600cc', borderColor:'#FFE600', borderWidth:1 }
       ]
     },
     options: {
