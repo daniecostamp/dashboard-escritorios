@@ -170,7 +170,7 @@
 
   <!-- TAB 3: COMPARATIVO 1 -->
   <div class="tab-panel card" id="tab-comp1">
-    <div class="section-title">Q2/3 2025 (média mensal) vs Jan–Mai 2026 (média mensal)</div>
+    <div class="section-title">Q2/3 2025 (média mensal) vs Jan–Ago 2026 (média mensal)</div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Comparação da média mensal entre os dois períodos por escritório e por indicador.</p>
     <div class="grid2" style="margin-bottom:24px">
       <div>
@@ -249,7 +249,7 @@ const BAR_DATALABELS = {
   formatter: fmtLabel
 };
 const Q23_IDX = [0,1,2,3,4,5];
-const H1_IDX = [6,7,8,9,10,11];
+const H1_IDX = [6,7,8,9,10,11,12,13];
 const JAN_IDX = 6;
 const FEV_MAI_IDX = [7,8,9,10,11];
 
@@ -306,15 +306,15 @@ function buildGroupKPIs(rowId, offices) {
     return `<div class="kpi">
       <div class="kpi-label">${label}</div>
       <div class="kpi-value" style="font-size:16px">${fmt}</div>
-      <div class="kpi-delta ${d >= 0 ? 'up' : 'down'}">${fmtDelta(d)} vs abr/26</div>
+      <div class="kpi-delta ${d >= 0 ? 'up' : 'down'}">${fmtDelta(d)} vs jul/26</div>
     </div>`;
   }
 
   row.innerHTML =
-    kpi('Recuperação — jun/26',  recup[11], recup[10], true)  +
-    kpi('Faturamento — jun/26',  fat[11],   fat[10],   true)  +
-    kpi('Carteira # — jun/26',   cn[11],    cn[10],    false) +
-    kpi('Carteira R$ — jun/26',  cv[11],    cv[10],    true);
+    kpi('Recuperação — ago/26',  recup[13], recup[12], true)  +
+    kpi('Faturamento — ago/26',  fat[13],   fat[12],   true)  +
+    kpi('Carteira # — ago/26',   cn[13],    cn[12],    false) +
+    kpi('Carteira R$ — ago/26',  cv[13],    cv[12],    true);
 }
 
 function buildKPIs() {
@@ -434,7 +434,7 @@ function buildTableConsolidated() {
   }
 
   // Traffic-light: mar/26=8, abr/26=9, mai/26=10, jun/26=11
-  const TRAFFIC_IDX = [8, 9, 10, 11];
+  const TRAFFIC_IDX = [8, 9, 10, 11, 12, 13];
   const TRAFFIC = [
     { bg: '#dcfce7', text: '#166534' }, // green  — best delta
     { bg: '#fef9c3', text: '#854d0e' }, // amber  — middle
@@ -535,7 +535,7 @@ function buildTableConsolidated() {
 function buildComp1() {
   function buildTable(metric, tableId) {
     const tbl = document.getElementById(tableId);
-    let html = '<thead><tr><th>Escritório</th><th>Q2/3 2025 (média)</th><th>Jan–Jun/26 (média)</th><th>Variação</th></tr></thead><tbody>';
+    let html = '<thead><tr><th>Escritório</th><th>Q2/3 2025 (média)</th><th>Jan–Ago/26 (média)</th><th>Variação</th></tr></thead><tbody>';
     OFFICES.forEach(o => {
       const a = avg(DATA[o][metric], Q23_IDX);
       const b = avg(DATA[o][metric], H1_IDX);
@@ -575,7 +575,7 @@ function buildComp1() {
       labels,
       datasets: [
         { label: 'Q2/3 2025 (média mensal)', data: h2vals, backgroundColor: '#009EE3cc', borderColor:'#009EE3', borderWidth:1 },
-        { label: 'Jan–Jun/2026 (média mensal)', data: h1vals, backgroundColor: '#FFE600cc', borderColor:'#FFE600', borderWidth:1 }
+        { label: 'Jan–Ago/2026 (média mensal)', data: h1vals, backgroundColor: '#FFE600cc', borderColor:'#FFE600', borderWidth:1 }
       ]
     },
     options: {
@@ -651,46 +651,46 @@ function buildComp2() {
 
 function buildAnalises() {
   const container = document.getElementById('analises-content');
-  const JAN = 6, JUN = 11;
+  const JAN = 6, AGO = 13;
   const analises = [];
 
-  // 1. Recuperação consolidada jun vs jan
+  // 1. Recuperação consolidada ago vs jan
   const totalRecupJan = OFFICES.reduce((s, o) => s + DATA[o].recuperacao[JAN], 0);
-  const totalRecupJun = OFFICES.reduce((s, o) => s + DATA[o].recuperacao[JUN], 0);
-  const diffRecup = pct(totalRecupJun, totalRecupJan);
+  const totalRecupAgo = OFFICES.reduce((s, o) => s + DATA[o].recuperacao[AGO], 0);
+  const diffRecup = pct(totalRecupAgo, totalRecupJan);
   analises.push({
     tipo: diffRecup < -10 ? 'danger' : diffRecup < 0 ? 'warn' : 'info',
-    titulo: 'Recuperação consolidada — jun/26 vs jan/26',
-    texto: `Jan/26: R$ ${Math.round(totalRecupJan).toLocaleString('pt-BR')} → Jun/26: R$ ${Math.round(totalRecupJun).toLocaleString('pt-BR')} — variação: ${fmtDelta(diffRecup)}.`
+    titulo: 'Recuperação consolidada — ago/26 vs jan/26',
+    texto: `Jan/26: R$ ${Math.round(totalRecupJan).toLocaleString('pt-BR')} → Ago/26: R$ ${Math.round(totalRecupAgo).toLocaleString('pt-BR')} — variação: ${fmtDelta(diffRecup)}.`
   });
 
-  // 2. Faturamento consolidado jun vs jan
+  // 2. Faturamento consolidado ago vs jan
   const totalFatJan = OFFICES.reduce((s, o) => s + DATA[o].faturamento[JAN], 0);
-  const totalFatJun = OFFICES.reduce((s, o) => s + DATA[o].faturamento[JUN], 0);
-  const diffFat = pct(totalFatJun, totalFatJan);
+  const totalFatAgo = OFFICES.reduce((s, o) => s + DATA[o].faturamento[AGO], 0);
+  const diffFat = pct(totalFatAgo, totalFatJan);
   analises.push({
     tipo: diffFat < -10 ? 'danger' : diffFat < 0 ? 'warn' : 'info',
-    titulo: 'Faturamento consolidado — jun/26 vs jan/26',
-    texto: `Jan/26: R$ ${Math.round(totalFatJan).toLocaleString('pt-BR')} → Jun/26: R$ ${Math.round(totalFatJun).toLocaleString('pt-BR')} — variação: ${fmtDelta(diffFat)}.`
+    titulo: 'Faturamento consolidado — ago/26 vs jan/26',
+    texto: `Jan/26: R$ ${Math.round(totalFatJan).toLocaleString('pt-BR')} → Ago/26: R$ ${Math.round(totalFatAgo).toLocaleString('pt-BR')} — variação: ${fmtDelta(diffFat)}.`
   });
 
-  // 3. Carteira # consolidada jun vs jan
+  // 3. Carteira # consolidada ago vs jan
   const totalCnJan = OFFICES.reduce((s, o) => s + DATA[o].carteira_n[JAN], 0);
-  const totalCnJun = OFFICES.reduce((s, o) => s + DATA[o].carteira_n[JUN], 0);
-  const diffCn = pct(totalCnJun, totalCnJan);
+  const totalCnAgo = OFFICES.reduce((s, o) => s + DATA[o].carteira_n[AGO], 0);
+  const diffCn = pct(totalCnAgo, totalCnJan);
   analises.push({
     tipo: diffCn < -10 ? 'danger' : diffCn < 0 ? 'warn' : 'info',
-    titulo: 'Carteira # consolidada — jun/26 vs jan/26',
-    texto: `Jan/26: ${Math.round(totalCnJan).toLocaleString('pt-BR')} clientes → Jun/26: ${Math.round(totalCnJun).toLocaleString('pt-BR')} clientes — variação: ${fmtDelta(diffCn)}.`
+    titulo: 'Carteira # consolidada — ago/26 vs jan/26',
+    texto: `Jan/26: ${Math.round(totalCnJan).toLocaleString('pt-BR')} clientes → Ago/26: ${Math.round(totalCnAgo).toLocaleString('pt-BR')} clientes — variação: ${fmtDelta(diffCn)}.`
   });
 
   // helper: escritório com maior perda por métrica
-  function maiorPerda(metric, fmt) {
+  function maiorPerda(metric) {
     return OFFICES.map(o => ({
       label: OFFICE_LABELS[o],
       jan: DATA[o][metric][JAN],
-      jun: DATA[o][metric][JUN],
-      d: pct(DATA[o][metric][JUN], DATA[o][metric][JAN])
+      ago: DATA[o][metric][AGO],
+      d: pct(DATA[o][metric][AGO], DATA[o][metric][JAN])
     })).sort((a, b) => a.d - b.d)[0];
   }
 
@@ -698,32 +698,32 @@ function buildAnalises() {
   const piorRecup = maiorPerda('recuperacao');
   analises.push({
     tipo: 'danger',
-    titulo: `Maior queda de recuperação — jun/26 vs jan/26: ${piorRecup.label}`,
-    texto: `Jan/26: R$ ${Math.round(piorRecup.jan).toLocaleString('pt-BR')} → Jun/26: R$ ${Math.round(piorRecup.jun).toLocaleString('pt-BR')} — variação: ${fmtDelta(piorRecup.d)}.`
+    titulo: `Maior queda de recuperação — ago/26 vs jan/26: ${piorRecup.label}`,
+    texto: `Jan/26: R$ ${Math.round(piorRecup.jan).toLocaleString('pt-BR')} → Ago/26: R$ ${Math.round(piorRecup.ago).toLocaleString('pt-BR')} — variação: ${fmtDelta(piorRecup.d)}.`
   });
 
   // 5. Maior perda — Faturamento
   const piorFat = maiorPerda('faturamento');
   analises.push({
     tipo: 'danger',
-    titulo: `Maior queda de faturamento — jun/26 vs jan/26: ${piorFat.label}`,
-    texto: `Jan/26: R$ ${Math.round(piorFat.jan).toLocaleString('pt-BR')} → Jun/26: R$ ${Math.round(piorFat.jun).toLocaleString('pt-BR')} — variação: ${fmtDelta(piorFat.d)}.`
+    titulo: `Maior queda de faturamento — ago/26 vs jan/26: ${piorFat.label}`,
+    texto: `Jan/26: R$ ${Math.round(piorFat.jan).toLocaleString('pt-BR')} → Ago/26: R$ ${Math.round(piorFat.ago).toLocaleString('pt-BR')} — variação: ${fmtDelta(piorFat.d)}.`
   });
 
   // 6. Maior perda — Carteira #
   const piorCn = maiorPerda('carteira_n');
   analises.push({
     tipo: 'danger',
-    titulo: `Maior queda de carteira # — jun/26 vs jan/26: ${piorCn.label}`,
-    texto: `Jan/26: ${Math.round(piorCn.jan).toLocaleString('pt-BR')} clientes → Jun/26: ${Math.round(piorCn.jun).toLocaleString('pt-BR')} clientes — variação: ${fmtDelta(piorCn.d)}.`
+    titulo: `Maior queda de carteira # — ago/26 vs jan/26: ${piorCn.label}`,
+    texto: `Jan/26: ${Math.round(piorCn.jan).toLocaleString('pt-BR')} clientes → Ago/26: ${Math.round(piorCn.ago).toLocaleString('pt-BR')} clientes — variação: ${fmtDelta(piorCn.d)}.`
   });
 
   // 7. Maior perda — Carteira R$
   const piorCv = maiorPerda('carteira_v');
   analises.push({
     tipo: 'danger',
-    titulo: `Maior queda de carteira R$ — jun/26 vs jan/26: ${piorCv.label}`,
-    texto: `Jan/26: R$ ${Math.round(piorCv.jan).toLocaleString('pt-BR')} → Jun/26: R$ ${Math.round(piorCv.jun).toLocaleString('pt-BR')} — variação: ${fmtDelta(piorCv.d)}.`
+    titulo: `Maior queda de carteira R$ — ago/26 vs jan/26: ${piorCv.label}`,
+    texto: `Jan/26: R$ ${Math.round(piorCv.jan).toLocaleString('pt-BR')} → Ago/26: R$ ${Math.round(piorCv.ago).toLocaleString('pt-BR')} — variação: ${fmtDelta(piorCv.d)}.`
   });
 
   const colorMap = { danger: ['var(--red-light)','var(--red)','#991b1b'], warn: ['var(--amber-light)','var(--amber)','#92400e'], info: ['var(--blue-light)','var(--blue)','#1d4ed8'] };
