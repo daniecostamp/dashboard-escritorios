@@ -84,6 +84,8 @@
   .comp-table tr:last-child td { border-bottom: none; }
   .comp-table .total { font-weight: 500; background: var(--surface2); }
   hr { border: none; border-top: 0.5px solid var(--border); margin: 20px 0; }
+  #tab-consolidado .y2025 { display: none; }
+  #tab-consolidado.show-2025 .y2025 { display: table-cell; }
 </style>
 </head>
 <body>
@@ -96,7 +98,7 @@
     <button class="tab active" data-tab="evolucao">Evolução temporal</button>
     <button class="tab" data-tab="consolidado">Consolidado por escritório</button>
     <button class="tab" data-tab="comp1">Q2/3 2025 vs 2026</button>
-    <button class="tab" data-tab="comp2">Jan/26 vs Fev–Ago/26</button>
+    <button class="tab" data-tab="comp2">Jan+Fev/26 vs Mar–Ago/26</button>
     <button class="tab" data-tab="analises">Análises e alertas</button>
   </div>
 
@@ -143,6 +145,9 @@
 
   <!-- TAB 2: CONSOLIDADO -->
   <div class="tab-panel card" id="tab-consolidado">
+    <div style="margin-bottom:14px">
+      <button id="toggle-2025" type="button" style="font-size:12px;font-weight:500;color:var(--blue);background:var(--blue-light);border:none;border-radius:4px;padding:5px 10px;cursor:pointer">▸ Mostrar 2025 (jul–dez/25)</button>
+    </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
       <div class="section-title" style="margin-bottom:0">Recuperação (R$) — por escritório</div>
       <div id="var-recup" style="font-size:13px"></div>
@@ -187,8 +192,8 @@
 
   <!-- TAB 4: COMPARATIVO 2 -->
   <div class="tab-panel card" id="tab-comp2">
-    <div class="section-title">Jan/2026 (baseline) vs média Fev–Ago/2026</div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Variação de cada escritório partindo de janeiro como base.</p>
+    <div class="section-title">Média Jan+Fev/2026 (baseline) vs média Mar–Ago/2026</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Variação de cada escritório partindo da média de jan+fev/26 como base.</p>
     <div class="grid2" style="margin-bottom:24px">
       <div>
         <div style="font-size:12px;font-weight:500;margin-bottom:10px;color:var(--text2)">Recuperação (R$)</div>
@@ -252,6 +257,8 @@ const Q23_IDX = [0,1,2,3,4,5];
 const H1_IDX = [6,7,8,9,10,11,12,13];
 const JAN_IDX = 6;
 const FEV_MAI_IDX = [7,8,9,10,11,12,13];
+const JANFEV_IDX = [6,7];
+const MAR_AGO_IDX = [8,9,10,11,12,13];
 
 const BUYER_OFFICES = ['KITEI','LINK','NOVAQUEST','NQ_DIG_BUYER','TOLEDO_BUYER'];
 const SELLER_OFFICES = ['NQ_DIG_SELLER','TOLEDO_SELLER'];
@@ -460,8 +467,9 @@ function buildTableConsolidated() {
       trafficMap[sorted[sorted.length - 1].key][ci] = 0; // maior → verde
     });
 
-    const JUL_JAN = [0,1,2,3,4,5,6];   // jul/25–jan/26
-    const FEV_MAI = [7,8,9,10,11,12,13]; // fev/26–ago/26
+    const Y2025_IDX = [0,1,2,3,4,5];      // jul/25–dez/25 (colapsável)
+    const JUL_FEV = [0,1,2,3,4,5,6,7];    // jul/25–fev/26
+    const MAR_AGO = [8,9,10,11,12,13];    // mar/26–ago/26
 
     function avgArr(arr, idxs) { return idxs.reduce((s,i) => s+arr[i], 0) / idxs.length; }
 
@@ -471,7 +479,8 @@ function buildTableConsolidated() {
       const isTraffic = rank !== undefined;
       const tc = isTraffic ? TRAFFIC[rank] : null;
       const bg = isTraffic ? `background:${tc.bg}` : '';
-      return `<td style="${bg}">${fmtVal(v, metric)}</td>`;
+      const cls = Y2025_IDX.includes(i) ? ' class="y2025"' : '';
+      return `<td${cls} style="${bg}">${fmtVal(v, metric)}</td>`;
     }
 
     function avgCellHtml(v, m1, bold) {
@@ -484,12 +493,12 @@ function buildTableConsolidated() {
     }
 
     function buildRow(arr, rowKey, label, isTotal) {
-      const m1 = avgArr(arr, JUL_JAN);
-      const m2 = avgArr(arr, FEV_MAI);
+      const m1 = avgArr(arr, JUL_FEV);
+      const m2 = avgArr(arr, MAR_AGO);
       let html = `<tr${isTotal?' class="total-row"':''}><td style="font-weight:500">${label}</td>`;
       arr.forEach((_, i) => {
         html += cellHtml(arr, rowKey, i);
-        if (i === 6) html += `<td style="background:#e8eeff;font-style:italic;${isTotal?'font-weight:600;':''}">${fmtVal(m1, metric)}</td>`;
+        if (i === 7) html += `<td style="background:#e8eeff;font-style:italic;${isTotal?'font-weight:600;':''}">${fmtVal(m1, metric)}</td>`;
       });
       html += avgCellHtml(m2, m1, isTotal);
       html += '</tr>';
@@ -498,11 +507,12 @@ function buildTableConsolidated() {
 
     let html = '<thead><tr><th>Escritório</th>';
     MONTHS.forEach((m, i) => {
+      const cls = Y2025_IDX.includes(i) ? ' class="y2025"' : '';
       const hi = TRAFFIC_IDX.includes(i) ? ' style="background:#f8fafc"' : '';
-      html += `<th${hi}>${m}</th>`;
-      if (i === 6) html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø jul–jan</th>';
+      html += `<th${cls}${hi}>${m}</th>`;
+      if (i === 7) html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø jul–fev</th>';
     });
-    html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø fev–ago</th>';
+    html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø mar–ago</th>';
     html += '</tr></thead><tbody>';
 
     OFFICES.forEach(o => { html += buildRow(DATA[o][metric], o, OFFICE_LABELS[o], false); });
@@ -514,8 +524,8 @@ function buildTableConsolidated() {
 
   function buildVariation(metric, divId) {
     const total = getConsolidated(metric);
-    const m1 = [0,1,2,3,4,5,6].reduce((s,i) => s+total[i], 0) / 7;
-    const m2 = [7,8,9,10].reduce((s,i) => s+total[i], 0) / 4;
+    const m1 = [0,1,2,3,4,5,6,7].reduce((s,i) => s+total[i], 0) / 8;
+    const m2 = [8,9,10,11,12,13].reduce((s,i) => s+total[i], 0) / 6;
     const d = pct(m2, m1);
     const positive = d >= 0;
     const color = positive ? '#166534' : '#991b1b';
@@ -523,7 +533,7 @@ function buildTableConsolidated() {
     const arrow = positive ? '▲' : '▼';
     document.getElementById(divId).innerHTML =
       `<span style="background:${bg};color:${color};padding:3px 10px;border-radius:4px;font-weight:600">` +
-      `${arrow} ${Math.abs(Math.round(d))}% · Ø fev–ago vs Ø jul–jan</span>`;
+      `${arrow} ${Math.abs(Math.round(d))}% · Ø mar–ago vs Ø jul–fev</span>`;
   }
 
   buildTable('carteira_n',  'tbl-cn');    buildVariation('carteira_n',  'var-cn');
@@ -594,10 +604,10 @@ function buildComp1() {
 function buildComp2() {
   function buildTable(metric, tableId) {
     const tbl = document.getElementById(tableId);
-    let html = '<thead><tr><th>Escritório</th><th>Jan/26</th><th>Méd. Fev–Ago/26</th><th>Variação</th></tr></thead><tbody>';
+    let html = '<thead><tr><th>Escritório</th><th>Méd. Jan+Fev/26</th><th>Méd. Mar–Ago/26</th><th>Variação</th></tr></thead><tbody>';
     OFFICES.forEach(o => {
-      const jan = DATA[o][metric][JAN_IDX];
-      const rest = avg(DATA[o][metric], FEV_MAI_IDX);
+      const jan = avg(DATA[o][metric], JANFEV_IDX);
+      const rest = avg(DATA[o][metric], MAR_AGO_IDX);
       const d = pct(rest, jan);
       const badge = d >= 0 ? 'badge-up' : 'badge-down';
       html += `<tr>
@@ -607,8 +617,8 @@ function buildComp2() {
         <td><span class="badge ${badge}">${fmtDelta(d)}</span></td>
       </tr>`;
     });
-    const totalJan = getConsolidated(metric)[JAN_IDX];
-    const totalRest = avg(getConsolidated(metric), FEV_MAI_IDX);
+    const totalJan = avg(getConsolidated(metric), JANFEV_IDX);
+    const totalRest = avg(getConsolidated(metric), MAR_AGO_IDX);
     const dTotal = pct(totalRest, totalJan);
     const badgeT = dTotal >= 0 ? 'badge-up' : 'badge-down';
     html += `<tr class="total-row">
@@ -625,15 +635,15 @@ function buildComp2() {
   const ctx = document.getElementById('chartComp2').getContext('2d');
   if (chartComp2) chartComp2.destroy();
   const labels = OFFICES.map(o => OFFICE_LABELS[o]);
-  const janVals = OFFICES.map(o => DATA[o]['recuperacao'][JAN_IDX]);
-  const restVals = OFFICES.map(o => avg(DATA[o]['recuperacao'], FEV_MAI_IDX));
+  const janVals = OFFICES.map(o => avg(DATA[o]['recuperacao'], JANFEV_IDX));
+  const restVals = OFFICES.map(o => avg(DATA[o]['recuperacao'], MAR_AGO_IDX));
   chartComp2 = new Chart(ctx, {
     type: 'bar',
     data: {
       labels,
       datasets: [
-        { label: 'Jan/2026', data: janVals, backgroundColor: '#009EE3cc', borderColor:'#009EE3', borderWidth:1 },
-        { label: 'Méd. Fev–Ago/2026', data: restVals, backgroundColor: '#FFE600cc', borderColor:'#FFE600', borderWidth:1 }
+        { label: 'Méd. Jan+Fev/2026', data: janVals, backgroundColor: '#009EE3cc', borderColor:'#009EE3', borderWidth:1 },
+        { label: 'Méd. Mar–Ago/2026', data: restVals, backgroundColor: '#FFE600cc', borderColor:'#FFE600', borderWidth:1 }
       ]
     },
     options: {
@@ -755,6 +765,12 @@ document.querySelectorAll('.tab').forEach(tab => {
     if (tab.dataset.tab === 'comp2') buildComp2();
     if (tab.dataset.tab === 'analises') buildAnalises();
   });
+});
+
+document.getElementById('toggle-2025').addEventListener('click', () => {
+  const el = document.getElementById('tab-consolidado');
+  const showing = el.classList.toggle('show-2025');
+  document.getElementById('toggle-2025').textContent = showing ? '▾ Ocultar 2025 (jul–dez/25)' : '▸ Mostrar 2025 (jul–dez/25)';
 });
 
 buildKPIs();
