@@ -70,6 +70,7 @@
   td { padding: 8px 10px; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
   tr:last-child td { border-bottom: none; }
   .total-row td { font-weight: 500; background: var(--surface2); }
+  .subtotal-row td { font-weight: 500; background: #f1f5f9; font-style: italic; }
   .neg { color: var(--red); }
   .pos { color: var(--teal); }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
@@ -492,10 +493,11 @@ function buildTableConsolidated() {
       return `<td style="${style}">${fmtVal(v, metric)}${deltaHtml}</td>`;
     }
 
-    function buildRow(arr, rowKey, label, isTotal) {
+    function buildRow(arr, rowKey, label, rowClass) {
       const m1 = avgArr(arr, JUL_FEV);
       const m2 = avgArr(arr, MAR_AGO);
-      let html = `<tr${isTotal?' class="total-row"':''}><td style="font-weight:500">${label}</td>`;
+      const isTotal = rowClass === 'total-row';
+      let html = `<tr${rowClass?` class="${rowClass}"`:''}><td style="font-weight:500">${label}</td>`;
       arr.forEach((_, i) => {
         html += cellHtml(arr, rowKey, i);
         if (i === 7) html += `<td style="background:#e8eeff;font-style:italic;${isTotal?'font-weight:600;':''}">${fmtVal(m1, metric)}</td>`;
@@ -515,25 +517,38 @@ function buildTableConsolidated() {
     html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø mar–ago</th>';
     html += '</tr></thead><tbody>';
 
-    OFFICES.forEach(o => { html += buildRow(DATA[o][metric], o, OFFICE_LABELS[o], false); });
+    BUYER_OFFICES.forEach(o => { html += buildRow(DATA[o][metric], o, OFFICE_LABELS[o], ''); });
+    html += buildRow(sumGroup(BUYER_OFFICES, metric), '__buyer__', 'Subtotal Buyer', 'subtotal-row');
+
+    SELLER_OFFICES.forEach(o => { html += buildRow(DATA[o][metric], o, OFFICE_LABELS[o], ''); });
+    html += buildRow(sumGroup(SELLER_OFFICES, metric), '__seller__', 'Subtotal Seller', 'subtotal-row');
+
     const total = getConsolidated(metric);
-    html += buildRow(total, '__total__', 'TOTAL', true);
+    html += buildRow(total, '__total__', 'TOTAL', 'total-row');
     html += '</tbody>';
     tbl.innerHTML = html;
   }
 
   function buildVariation(metric, divId) {
-    const total = getConsolidated(metric);
-    const m1 = [0,1,2,3,4,5,6,7].reduce((s,i) => s+total[i], 0) / 8;
-    const m2 = [8,9,10,11,12,13].reduce((s,i) => s+total[i], 0) / 6;
-    const d = pct(m2, m1);
-    const positive = d >= 0;
-    const color = positive ? '#166534' : '#991b1b';
-    const bg = positive ? '#dcfce7' : '#fee2e2';
-    const arrow = positive ? '▲' : '▼';
+    function calcDelta(offices) {
+      const arr = sumGroup(offices, metric);
+      const m1 = [0,1,2,3,4,5,6,7].reduce((s,i) => s+arr[i], 0) / 8;
+      const m2 = [8,9,10,11,12,13].reduce((s,i) => s+arr[i], 0) / 6;
+      return pct(m2, m1);
+    }
+    function badge(label, d) {
+      const positive = d >= 0;
+      const color = positive ? '#166534' : '#991b1b';
+      const bg = positive ? '#dcfce7' : '#fee2e2';
+      const arrow = positive ? '▲' : '▼';
+      return `<span style="background:${bg};color:${color};padding:3px 10px;border-radius:4px;font-weight:600;margin-left:6px;white-space:nowrap">${arrow} ${Math.abs(Math.round(d))}% ${label}</span>`;
+    }
+    const dBuyer  = calcDelta(BUYER_OFFICES);
+    const dSeller = calcDelta(SELLER_OFFICES);
+    const dTotal  = calcDelta(OFFICES);
     document.getElementById(divId).innerHTML =
-      `<span style="background:${bg};color:${color};padding:3px 10px;border-radius:4px;font-weight:600">` +
-      `${arrow} ${Math.abs(Math.round(d))}% · Ø mar–ago vs Ø jul–fev</span>`;
+      `<span style="font-size:11px;color:var(--text2)">Ø mar–ago vs Ø jul–fev:</span>` +
+      badge('Buyer', dBuyer) + badge('Seller', dSeller) + badge('Total', dTotal);
   }
 
   buildTable('carteira_n',  'tbl-cn');    buildVariation('carteira_n',  'var-cn');
