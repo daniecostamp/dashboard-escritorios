@@ -470,6 +470,7 @@ function buildTableConsolidated() {
 
     const Y2025_IDX = [0,1,2,3,4,5];      // jul/25–dez/25 (colapsável)
     const JUL_FEV = [0,1,2,3,4,5,6,7];    // jul/25–fev/26
+    const JAN_FEV = [6,7];                // jan/26–fev/26
     const MAR_AGO = [8,9,10,11,12,13];    // mar/26–ago/26
 
     function avgArr(arr, idxs) { return idxs.reduce((s,i) => s+arr[i], 0) / idxs.length; }
@@ -496,25 +497,33 @@ function buildTableConsolidated() {
     function buildRow(arr, rowKey, label, rowClass) {
       const m1 = avgArr(arr, JUL_FEV);
       const m2 = avgArr(arr, MAR_AGO);
+      const janFev = avgArr(arr, JAN_FEV);
       const isTotal = rowClass === 'total-row';
       let html = `<tr${rowClass?` class="${rowClass}"`:''}><td style="font-weight:500">${label}</td>`;
       arr.forEach((_, i) => {
         html += cellHtml(arr, rowKey, i);
-        if (i === 7) html += `<td style="background:#e8eeff;font-style:italic;${isTotal?'font-weight:600;':''}">${fmtVal(m1, metric)}</td>`;
+        if (i === 5) html += `<td class="y2025" style="background:#e8eeff;font-style:italic;${isTotal?'font-weight:600;':''}">${fmtVal(m1, metric)}</td>`;
+        if (i === 7) html += `<td style="background:#e8eeff;font-style:italic;${isTotal?'font-weight:600;':''}">${fmtVal(janFev, metric)}</td>`;
       });
-      html += avgCellHtml(m2, m1, isTotal);
+      html += avgCellHtml(m2, janFev, isTotal);
       html += '</tr>';
       return html;
     }
+
+    const totalArrHeader = getConsolidated(metric);
+    const dJanFevHeader = pct(avgArr(totalArrHeader, JAN_FEV), avgArr(totalArrHeader, JUL_FEV));
+    const arrowJanFevHeader = dJanFevHeader >= 0 ? '▲' : '▼';
+    const colorJanFevHeader = dJanFevHeader >= 0 ? '#166534' : '#991b1b';
 
     let html = '<thead><tr><th>Escritório</th>';
     MONTHS.forEach((m, i) => {
       const cls = Y2025_IDX.includes(i) ? ' class="y2025"' : '';
       const hi = TRAFFIC_IDX.includes(i) ? ' style="background:#f8fafc"' : '';
       html += `<th${cls}${hi}>${m}</th>`;
-      if (i === 7) html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø jul–fev</th>';
+      if (i === 5) html += '<th class="y2025" style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø jul–fev</th>';
+      if (i === 7) html += `<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø jan–fev<br><span style="font-size:10px;color:${colorJanFevHeader};font-weight:600">${arrowJanFevHeader}${Math.abs(Math.round(dJanFevHeader))}% vs jul–fev</span></th>`;
     });
-    html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø mar–ago</th>';
+    html += '<th style="background:#e8eeff;font-style:italic;white-space:nowrap">Ø mar–ago<br><span style="font-size:9px;font-weight:400;color:var(--text2)">vs jan–fev</span></th>';
     html += '</tr></thead><tbody>';
 
     BUYER_OFFICES.forEach(o => { html += buildRow(DATA[o][metric], o, OFFICE_LABELS[o], ''); });
@@ -532,7 +541,7 @@ function buildTableConsolidated() {
   function buildVariation(metric, divId) {
     function calcDelta(offices) {
       const arr = sumGroup(offices, metric);
-      const m1 = [0,1,2,3,4,5,6,7].reduce((s,i) => s+arr[i], 0) / 8;
+      const m1 = [6,7].reduce((s,i) => s+arr[i], 0) / 2;
       const m2 = [8,9,10,11,12,13].reduce((s,i) => s+arr[i], 0) / 6;
       return pct(m2, m1);
     }
@@ -547,7 +556,7 @@ function buildTableConsolidated() {
     const dSeller = calcDelta(SELLER_OFFICES);
     const dTotal  = calcDelta(OFFICES);
     document.getElementById(divId).innerHTML =
-      `<span style="font-size:11px;color:var(--text2)">Ø mar–ago vs Ø jul–fev:</span>` +
+      `<span style="font-size:11px;color:var(--text2)">Ø mar–ago vs Ø jan–fev:</span>` +
       badge('Buyer', dBuyer) + badge('Seller', dSeller) + badge('Total', dTotal);
   }
 
